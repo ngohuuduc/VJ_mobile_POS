@@ -1,0 +1,678 @@
+<!DOCTYPE html><html><head>
+      <title>process_flow</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="file:////wsl.localhost/Ubuntu/home/duc/.vscode-server/extensions/shd101wyy.markdown-preview-enhanced-0.8.22/crossnote/dependencies/katex/katex.min.css">
+      
+      
+      <script type="text/javascript" src="file:////wsl.localhost/Ubuntu/home/duc/.vscode-server/extensions/shd101wyy.markdown-preview-enhanced-0.8.22/crossnote/dependencies/mermaid/mermaid.min.js" charset="UTF-8"></script>
+      
+      
+      <style>
+      code[class*=language-],pre[class*=language-]{color:#333;background:0 0;font-family:Consolas,"Liberation Mono",Menlo,Courier,monospace;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.4;-moz-tab-size:8;-o-tab-size:8;tab-size:8;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:.8em;overflow:auto;border-radius:3px;background:#f5f5f5}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal;background:#f5f5f5}.token.blockquote,.token.comment{color:#969896}.token.cdata{color:#183691}.token.doctype,.token.macro.property,.token.punctuation,.token.variable{color:#333}.token.builtin,.token.important,.token.keyword,.token.operator,.token.rule{color:#a71d5d}.token.attr-value,.token.regex,.token.string,.token.url{color:#183691}.token.atrule,.token.boolean,.token.code,.token.command,.token.constant,.token.entity,.token.number,.token.property,.token.symbol{color:#0086b3}.token.prolog,.token.selector,.token.tag{color:#63a35c}.token.attr-name,.token.class,.token.class-name,.token.function,.token.id,.token.namespace,.token.pseudo-class,.token.pseudo-element,.token.url-reference .token.variable{color:#795da3}.token.entity{cursor:help}.token.title,.token.title .token.punctuation{font-weight:700;color:#1d3e81}.token.list{color:#ed6a43}.token.inserted{background-color:#eaffea;color:#55a532}.token.deleted{background-color:#ffecec;color:#bd2c00}.token.bold{font-weight:700}.token.italic{font-style:italic}.language-json .token.property{color:#183691}.language-markup .token.tag .token.punctuation{color:#333}.language-css .token.function,code.language-css{color:#0086b3}.language-yaml .token.atrule{color:#63a35c}code.language-yaml{color:#183691}.language-ruby .token.function{color:#333}.language-markdown .token.url{color:#795da3}.language-makefile .token.symbol{color:#795da3}.language-makefile .token.variable{color:#183691}.language-makefile .token.builtin{color:#0086b3}.language-bash .token.keyword{color:#0086b3}pre[data-line]{position:relative;padding:1em 0 1em 3em}pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;display:block;width:100%}pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0));pointer-events:none;line-height:inherit;white-space:pre}pre[data-line] .line-highlight:before,pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none;box-shadow:0 1px #fff}pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}html body{font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ol,html body>ul{margin-bottom:16px}html body ol,html body ul{padding-left:2em}html body ol.no-list,html body ul.no-list{padding:0;list-style-type:none}html body ol ol,html body ol ul,html body ul ol,html body ul ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:700;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::after,html body code::before{letter-spacing:-.2em;content:'\00a0'}html body pre>code{padding:0;margin:0;word-break:normal;white-space:pre;background:0 0;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:after,html body pre code:before,html body pre tt:after,html body pre tt:before{content:normal}html body blockquote,html body dl,html body ol,html body p,html body pre,html body ul{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body code,html body pre{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview ul{list-style:disc}.markdown-preview ul ul{list-style:circle}.markdown-preview ul ul ul{list-style:square}.markdown-preview ol{list-style:decimal}.markdown-preview ol ol,.markdown-preview ul ol{list-style-type:lower-roman}.markdown-preview ol ol ol,.markdown-preview ol ul ol,.markdown-preview ul ol ol,.markdown-preview ul ul ol{list-style-type:lower-alpha}.markdown-preview .newpage,.markdown-preview .pagebreak{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center!important}.markdown-preview:not([data-for=preview]) .code-chunk .code-chunk-btn-group{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .status{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .output-div{margin-bottom:16px}.markdown-preview .md-toc{padding:0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link div,.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}.markdown-preview .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0;min-height:100vh}@media screen and (min-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{font-size:14px!important;padding:1em}}@media print{html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc{padding:0 16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link div,html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% - 300px);padding:2em calc(50% - 457px - 300px / 2);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+      <script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // your code here
+  });
+</script>
+    </head>
+    <body for="html-export">
+      <div class="crossnote markdown-preview  ">
+      
+<h1 id="vj-mobile-pos--process-flow">VJ Mobile POS — Process Flow </h1>
+<blockquote>
+<p>Trạng thái: Draft<br>
+Cập nhật: 2026-04-14<br>
+Phiên bản: 0.6</p>
+</blockquote>
+<p>Chỉ bao gồm các luồng đã xác định đủ nội dung.<br>
+Các câu hỏi còn mở xem tại <a href="open_questions.md">open_questions.md</a>.</p>
+<hr>
+<h2 id="chú-thích-màu-sắc">Chú thích màu sắc </h2>
+<table>
+<thead>
+<tr>
+<th>Màu</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🔵 Xanh dương</td>
+<td>Thao tác của <strong>người dùng</strong></td>
+</tr>
+<tr>
+<td>⬜ Xám nhạt</td>
+<td>Xử lý <strong>hệ thống</strong> / Backend</td>
+</tr>
+<tr>
+<td>🟣 Tím nhạt</td>
+<td>Thao tác trên <strong>Odoo</strong> (XML-RPC)</td>
+</tr>
+<tr>
+<td>🟢 Xanh lá</td>
+<td>Truy vấn / ghi <strong>Database</strong></td>
+</tr>
+<tr>
+<td>🟡 Vàng</td>
+<td>Điểm <strong>quyết định</strong></td>
+</tr>
+<tr>
+<td>🔴 Đỏ nhạt</td>
+<td><strong>Cảnh báo</strong> / Từ chối</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="mục-lục">Mục lục </h2>
+<h3 id="phần-a--business-flows-nghiệp-vụ">Phần A — Business Flows (Nghiệp vụ) </h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Luồng</th>
+<th>Mô tả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td>Bán hàng — Tạo đơn &amp; Xác nhận</td>
+<td>Chọn SP, serial, xác nhận hoặc lưu nháp</td>
+</tr>
+<tr>
+<td>A2</td>
+<td>Nhận thanh toán</td>
+<td>Chọn KH (nếu chưa), ghi nhận thủ công, multi-payment, đặt cọc</td>
+</tr>
+<tr>
+<td>A3</td>
+<td>Xuất kho</td>
+<td>Auto validate picking + serial + backorder</td>
+</tr>
+<tr>
+<td>A4</td>
+<td>Quản lý Backorder</td>
+<td>Theo dõi, validate, hủy backorder</td>
+</tr>
+<tr>
+<td>A5</td>
+<td>Hủy đơn hàng</td>
+<td>Hủy theo trạng thái + phân quyền</td>
+</tr>
+<tr>
+<td>A6</td>
+<td>Kiểm tra tồn kho</td>
+<td>Tra cứu stock.quant theo location</td>
+</tr>
+<tr>
+<td>A7</td>
+<td>Tra cứu MST</td>
+<td>VietQR API + TTLCache</td>
+</tr>
+<tr>
+<td>A8</td>
+<td>In phiếu bán hàng</td>
+<td>Generate PDF (A4/A5) từ template</td>
+</tr>
+</tbody>
+</table>
+<h3 id="phần-b--technical-flows-kỹ-thuật">Phần B — Technical Flows (Kỹ thuật) </h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Luồng</th>
+<th>Mô tả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B1</td>
+<td>Đăng nhập</td>
+<td>JWT auth + hr.employee info</td>
+</tr>
+<tr>
+<td>B2</td>
+<td>Làm mới Cache</td>
+<td>TTL auto-expire + flush thủ công</td>
+</tr>
+<tr>
+<td>B3</td>
+<td>Quản lý User</td>
+<td>Tạo user liên kết hr.employee, phân quyền</td>
+</tr>
+<tr>
+<td>B4</td>
+<td>Reset Password</td>
+<td>Gửi email token qua AWS SES</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h1 id="phần-a--business-flows">Phần A — Business Flows </h1>
+<hr>
+<h2 id="a1-luồng-bán-hàng--tạo-đơn--xác-nhận">A1. Luồng Bán hàng — Tạo đơn &amp; Xác nhận </h2>
+<div class="mermaid">flowchart TD
+    classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
+    classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
+    classDef odoo fill:#EDE9FE,stroke:#7C3AED,color:#3b0764
+    classDef db fill:#DCFCE7,stroke:#16A34A,color:#14532d
+    classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
+    classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
+    classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
+
+    A([Bắt đầu]):::terminal --&gt; B[Warehouse tự động chọn\ntheo location của user]:::system
+    B --&gt; C[Tìm kiếm sản phẩm\ntên / SKU / barcode / serial]:::user
+    C --&gt; D[Thêm SP vào đơn\nChọn serial nếu có]:::user
+    D --&gt; E{SP có serial?}:::decision
+    E -- Có --&gt; F[Gợi ý serial từ stock.lot\nUser chọn / nhập]:::user
+    E -- Không --&gt; G[Thêm trực tiếp]:::system
+    F --&gt; H{Còn thêm SP?}:::decision
+    G --&gt; H
+    H -- Có --&gt; C
+    H -- Không --&gt; I[Xem lại đơn hàng\ngiá / số lượng]:::user
+    I --&gt; J{Hành động}:::decision
+    J -- Lưu nháp --&gt; K[INSERT draft_orders\nexpires_at = now + 8h]:::db
+    K --&gt; L([Đơn nháp lưu thành công]):::terminal
+    J -- Xác nhận --&gt; M[sale.order.create\nsale.order.action_confirm]:::odoo
+    M --&gt; N[Odoo tự tạo stock.picking]:::odoo
+    N --&gt; O([Tiếp theo: Luồng A3 &amp; A2]):::terminal
+    J -- Hủy --&gt; P([Kết thúc]):::terminal
+</div><p><strong>Ghi chú:</strong></p>
+<ul>
+<li>KH không bắt buộc ở bước này — chỉ bắt buộc trước khi thanh toán (A2)</li>
+<li>SP hết hàng: cho phép thêm kèm cảnh báo, ghi <code>**</code> trong tên SP (OQ-Q04)</li>
+<li>Serial chọn ngay khi thêm SP (OQ-Q04)</li>
+</ul>
+<hr>
+<h2 id="a2-luồng-nhận-thanh-toán-ghi-nhận-thủ-công">A2. Luồng Nhận thanh toán (Ghi nhận thủ công) </h2>
+<div class="mermaid">flowchart TD
+    classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
+    classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
+    classDef odoo fill:#EDE9FE,stroke:#7C3AED,color:#3b0764
+    classDef db fill:#DCFCE7,stroke:#16A34A,color:#14532d
+    classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
+    classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
+    classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
+
+    START{Điểm vào}:::decision -- Đơn mới\nvừa xác nhận --&gt; CK
+    START -- Thu phần còn lại\nkhách quay lại --&gt; SEARCH[Tìm đơn theo\ntên / SĐT / MST / email]:::user
+    SEARCH --&gt; FOUND[Chọn đơn hàng\nHiển thị đã cọc &amp; còn lại]:::system
+    FOUND --&gt; B
+
+    CK{Đơn có KH chưa?}:::decision
+    CK -- Chưa có --&gt; SELKH[Chọn / Tạo khách hàng\ntên, SĐT, email]:::user
+    CK -- Đã có --&gt; B
+    SELKH --&gt; MST{KH có MST?}:::decision
+    MST -- Có --&gt; LOOKUP[Tra cứu VietQR API\nAuto-fill thông tin]:::system
+    MST -- Không --&gt; B
+    LOOKUP --&gt; B
+
+    B{Loại ghi nhận?}:::decision -- Đặt cọc --&gt; C[Nhập số tiền cọc\ntự do]:::user
+    B -- Thanh toán đầy đủ / còn lại --&gt; D[Hiển thị tổng tiền cần thu]:::system
+    C --&gt; E[Chọn phương thức thanh toán]:::user
+    D --&gt; E
+    E --&gt; F{Phương thức}:::decision
+    F -- Tiền mặt --&gt; G[Nhập số tiền nhận\nTính tiền thừa]:::user
+    F -- Chuyển khoản --&gt; H[Ghi nhận số tiền\nvà ngân hàng]:::user
+    F -- VNPay / MoMo --&gt; I[Xác nhận thủ công\nsau khi khách thanh toán]:::user
+    F -- Thẻ tín dụng --&gt; J[Xác nhận thủ công\nsau khi máy POS xác nhận]:::user
+    G --&gt; K{Còn thiếu?\nThêm phương thức?}:::decision
+    H --&gt; K
+    I --&gt; K
+    J --&gt; K
+    K -- Thêm phương thức --&gt; E
+    K -- Hoàn tất --&gt; L[Tạo account.move draft\ntrên Odoo]:::odoo
+    L --&gt; M[Tạo account.payment\nlinked to invoice]:::odoo
+    M --&gt; N[Ghi audit log]:::db
+    N --&gt; O([Hoàn tất\nKế toán post invoice trên Odoo]):::terminal
+</div><p><strong>Ghi chú:</strong></p>
+<ul>
+<li><strong>Bắt buộc chọn/tạo KH trước khi thanh toán</strong> — nếu đơn chưa có KH sẽ mở dialog chọn KH</li>
+<li>Hỗ trợ đặt cọc nhiều lần (OQ-O01)</li>
+<li>Đơn cọc không hết hạn (OQ-O02)</li>
+<li>Nhiều phương thức trong 1 đơn (OQ-C03)</li>
+</ul>
+<hr>
+<h2 id="a3-luồng-xuất-kho-auto-validate--serial--backorder">A3. Luồng Xuất kho (Auto validate + Serial + Backorder) </h2>
+<div class="mermaid">flowchart TD
+    classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
+    classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
+    classDef odoo fill:#EDE9FE,stroke:#7C3AED,color:#3b0764
+    classDef db fill:#DCFCE7,stroke:#16A34A,color:#14532d
+    classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
+    classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
+    classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
+
+    A([sale.order xác nhận]):::terminal --&gt; B[Odoo tạo stock.picking tự động]:::odoo
+    B --&gt; C[Kiểm tra stock.quant\ntheo location của đơn hàng]:::system
+    C --&gt; D{Đủ hàng?}:::decision
+    D -- Đủ toàn bộ --&gt; E{Có Serial Number?}:::decision
+    D -- Thiếu một phần --&gt; F[Hiển thị cảnh báo\ndanh sách hàng thiếu + SL]:::warning
+    F --&gt; G[Validate phần có hàng\nTạo backorder cho phần thiếu]:::odoo
+    G --&gt; H([Backorder → Luồng A4]):::terminal
+    E -- Không --&gt; I[Auto validate picking\nbutton_validate]:::odoo
+    E -- Có --&gt; J[Gợi ý serial từ stock.lot\ntheo sản phẩm đã chọn]:::system
+    J --&gt; K[POS user chọn / nhập serial]:::user
+    K --&gt; I
+    I --&gt; L[Tồn kho cập nhật trên Odoo]:::odoo
+    L --&gt; M[Invalidate stock_cache]:::system
+    M --&gt; N([Hoàn tất xuất kho]):::terminal
+</div><hr>
+<h2 id="a4-luồng-quản-lý-backorder">A4. Luồng Quản lý Backorder </h2>
+<div class="mermaid">flowchart TD
+    classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
+    classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
+    classDef odoo fill:#EDE9FE,stroke:#7C3AED,color:#3b0764
+    classDef db fill:#DCFCE7,stroke:#16A34A,color:#14532d
+    classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
+    classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
+    classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
+
+    A([Backorder tạo sau Luồng A3]):::terminal --&gt; B[Hiển thị danh sách backorder\ntheo user / location]:::system
+    B --&gt; C{Hành động}:::decision
+    C -- Xem chi tiết --&gt; D[Hiển thị SP thiếu\nSL còn lại / trạng thái]:::system
+    D --&gt; C
+    C -- Validate khi có hàng --&gt; E[Kiểm tra stock.quant\ntheo location]:::system
+    E --&gt; F{Đủ hàng?}:::decision
+    F -- Chưa đủ --&gt; G([Thông báo: vẫn thiếu\nChờ nhập kho trên Odoo]):::warning
+    F -- Đủ --&gt; H{Có Serial Number?}:::decision
+    H -- Không --&gt; I[Validate backorder picking]:::odoo
+    H -- Có --&gt; J[Gợi ý serial\ntừ stock.lot]:::system
+    J --&gt; K[POS user chọn / nhập serial]:::user
+    K --&gt; I
+    I --&gt; L[Tồn kho cập nhật trên Odoo]:::odoo
+    L --&gt; M[Invalidate stock_cache]:::system
+    M --&gt; N([Backorder hoàn tất]):::terminal
+    C -- Hủy backorder --&gt; O{Role?}:::decision
+    O -- ADMIN --&gt; P[Hủy backorder picking\ntrên Odoo]:::odoo
+    P --&gt; Q([Backorder đã hủy]):::terminal
+    O -- POS User --&gt; R([Từ chối\nLiên hệ ADMIN]):::warning
+</div><hr>
+<h2 id="a5-luồng-hủy-đơn-hàng">A5. Luồng Hủy đơn hàng </h2>
+<div class="mermaid">flowchart TD
+    classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
+    classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
+    classDef odoo fill:#EDE9FE,stroke:#7C3AED,color:#3b0764
+    classDef db fill:#DCFCE7,stroke:#16A34A,color:#14532d
+    classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
+    classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
+    classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
+
+    A([Yêu cầu hủy đơn]):::terminal --&gt; B[Nhân viên chọn đơn cần hủy]:::user
+    B --&gt; C{Trạng thái đơn?}:::decision
+    C -- Draft --&gt; D[sale.order.action_cancel]:::odoo
+    D --&gt; E[Xóa draft_orders trong DB]:::db
+    E --&gt; F[Ghi audit log]:::db
+    F --&gt; G([Đơn đã hủy]):::terminal
+    C -- Đã xác nhận\nChưa xuất kho --&gt; H{Role người dùng?}:::decision
+    H -- ADMIN --&gt; I[Hủy stock.picking\naction_cancel]:::odoo
+    I --&gt; J[sale.order.action_cancel]:::odoo
+    J --&gt; F
+    H -- POS User --&gt; K([Từ chối\nYêu cầu liên hệ ADMIN]):::warning
+    C -- Đã xuất kho --&gt; L([Không cho phép\nCần xử lý trên Odoo]):::warning
+</div><hr>
+<h2 id="a6-luồng-kiểm-tra-tồn-kho">A6. Luồng Kiểm tra tồn kho </h2>
+<div class="mermaid">sequenceDiagram
+    actor User as Nhân viên
+    participant FE as Frontend
+    participant BE as Backend (TTLCache)
+    participant Odoo
+
+    rect rgb(219, 234, 254)
+        Note over User,FE: Thao tác người dùng
+        User-&gt;&gt;FE: Tìm kiếm sản phẩm
+        FE-&gt;&gt;BE: GET /inventory/stock?product_id=X&amp;location_id=Y
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,Odoo: Xử lý hệ thống
+        alt Cache hit (TTL &lt; 5 phút)
+            Note over BE: Trả từ TTLCache in-memory
+        else Cache miss
+            BE-&gt;&gt;Odoo: XML-RPC search_read stock.quant
+            Odoo--&gt;&gt;BE: Dữ liệu tồn kho theo location
+            Note over BE: Lưu vào TTLCache (5 phút)
+        end
+        BE--&gt;&gt;FE: Tồn kho theo địa điểm
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Phản hồi người dùng
+        FE--&gt;&gt;User: Hiển thị số lượng có thể bán
+    end
+</div><hr>
+<h2 id="a7-luồng-tra-cứu-mst">A7. Luồng Tra cứu MST </h2>
+<div class="mermaid">sequenceDiagram
+    actor User as Thu ngân
+    participant FE as Frontend
+    participant BE as Backend (TTLCache)
+    participant MST as VietQR API
+
+    rect rgb(219, 234, 254)
+        Note over User,FE: Thao tác người dùng
+        User-&gt;&gt;FE: Nhập mã số thuế
+        FE-&gt;&gt;BE: GET /customers/mst/{tax_code}
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,MST: Xử lý hệ thống
+        alt Cache hit (TTL &lt; 10 phút)
+            Note over BE: Trả từ TTLCache in-memory
+        else Cache miss
+            BE-&gt;&gt;MST: GET /v2/business/{tax_code}
+            MST--&gt;&gt;BE: Tên, địa chỉ, trạng thái hoạt động
+            Note over BE: Lưu vào TTLCache (10 phút)
+        end
+        BE--&gt;&gt;FE: Thông tin doanh nghiệp
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Phản hồi người dùng
+        FE--&gt;&gt;User: Auto-fill form khách hàng
+    end
+</div><hr>
+<h2 id="a8-luồng-in-phiếu-bán-hàng-generate-pdf">A8. Luồng In phiếu bán hàng (Generate PDF) </h2>
+<div class="mermaid">sequenceDiagram
+    actor User as Nhân viên
+    participant FE as Frontend
+    participant BE as FastAPI (WeasyPrint + Jinja2)
+    participant DB as PostgreSQL
+
+    rect rgb(219, 234, 254)
+        Note over User,FE: Thao tác người dùng
+        User-&gt;&gt;FE: Bấm "In phiếu" → Chọn loại + khổ giấy
+        FE-&gt;&gt;BE: GET /print/{receipt_type}?order_id=X&amp;paper_size=A4
+        Note over BE: receipt_type: order_confirm / deposit / payment
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,DB: Xử lý hệ thống
+        BE-&gt;&gt;DB: Lấy template HTML/CSS theo loại phiếu
+        DB--&gt;&gt;BE: Template Jinja2
+        BE-&gt;&gt;BE: Render template với dữ liệu đơn hàng
+        Note over BE: Bao gồm: số tiền bằng chữ (TV), vùng chữ ký
+        BE-&gt;&gt;BE: WeasyPrint: HTML/CSS → PDF binary
+        BE--&gt;&gt;FE: PDF file (Content-Type: application/pdf)
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Phản hồi người dùng
+        FE--&gt;&gt;User: Mở PDF preview / download
+    end
+</div><p><strong>Ghi chú:</strong></p>
+<ul>
+<li>User chọn A4 hoặc A5 khi in (OQ-Z01)</li>
+<li>Chỉ preview / download, không in trực tiếp (OQ-U02)</li>
+</ul>
+<hr>
+<h1 id="phần-b--technical-flows">Phần B — Technical Flows </h1>
+<hr>
+<h2 id="b1-luồng-đăng-nhập-authentication">B1. Luồng Đăng nhập (Authentication) </h2>
+<div class="mermaid">sequenceDiagram
+    actor User as Người dùng
+    participant FE as Frontend (Vue)
+    participant BE as Backend (FastAPI)
+    participant DB as PostgreSQL
+    participant Odoo as Odoo (hr.employee)
+
+    rect rgb(219, 234, 254)
+        Note over User,FE: Thao tác người dùng
+        User-&gt;&gt;FE: Nhập username / password
+        FE-&gt;&gt;BE: POST /auth/login
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,Odoo: Xử lý hệ thống
+        BE-&gt;&gt;DB: Kiểm tra credentials + check is_active + is_locked
+        alt Sai &gt;= 5 lần
+            BE--&gt;&gt;FE: 401 ACCOUNT_LOCKED
+        else Tài khoản bị vô hiệu hóa
+            BE--&gt;&gt;FE: 401 ACCOUNT_DISABLED
+        end
+        DB--&gt;&gt;BE: User record + hr_employee_id + roles + locations
+        BE-&gt;&gt;Odoo: XML-RPC hr.employee.search_read(hr_employee_id)
+        Odoo--&gt;&gt;BE: Tên, email, SĐT, phòng ban, chức danh
+        BE-&gt;&gt;DB: Lưu refresh token (bảng refresh_tokens)
+        BE--&gt;&gt;FE: Access token + Refresh token + user info + employee info
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Phản hồi người dùng
+        FE-&gt;&gt;FE: Lưu token (memory) + refresh token (localStorage)
+        FE-&gt;&gt;FE: Khởi động idle watcher (5 phút)
+        FE--&gt;&gt;User: Vào màn hình chính
+    end
+</div><p><strong>Ghi chú:</strong></p>
+<ul>
+<li>Credentials quản lý trên PostgreSQL local — không dùng tài khoản Odoo</li>
+<li>Thông tin cá nhân (tên, email, SĐT...) lấy từ <code>hr.employee</code> trên Odoo</li>
+<li>Khóa tài khoản sau 5 lần sai → ADMIN mở thủ công (OQ-M04, OQ-W03)</li>
+<li>Idle timeout 5 phút → tự đăng xuất (OQ-M03)</li>
+</ul>
+<hr>
+<h2 id="b2-luồng-làm-mới-cache">B2. Luồng Làm mới Cache </h2>
+<div class="mermaid">flowchart TD
+    classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
+    classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
+    classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
+    classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
+
+    A([Trigger]):::terminal --&gt; B{Loại trigger}:::decision
+    B -- Thủ công\nADMIN bấm Refresh --&gt; C[POST /admin/cache/flush]:::user
+    B -- Tự động\nTTL hết hạn --&gt; D[TTLCache tự expire\nkhông cần tác động]:::system
+    C --&gt; E{Phạm vi flush}:::decision
+    E -- Sản phẩm / Giá --&gt; F[cache.clear product_cache]:::system
+    E -- Pricelist --&gt; G[cache.clear pricelist_cache]:::system
+    E -- Danh mục SP --&gt; GA[cache.clear category_cache]:::system
+    E -- Tồn kho --&gt; GB[cache.clear stock_cache]:::system
+    E -- Khách hàng --&gt; GC[cache.clear customer_cache]:::system
+    E -- Tất cả --&gt; H[cache.clear all]:::system
+    F --&gt; I([Lần gọi tiếp theo fetch từ Odoo]):::terminal
+    G --&gt; I
+    GA --&gt; I
+    GB --&gt; I
+    GC --&gt; I
+    H --&gt; I
+    D --&gt; I
+</div><p><strong>TTL mặc định:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Cache</th>
+<th>TTL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sản phẩm + giá</td>
+<td>30 phút</td>
+</tr>
+<tr>
+<td>Pricelist</td>
+<td>1 giờ</td>
+</tr>
+<tr>
+<td>Danh mục SP (<code>product.category</code>)</td>
+<td>8 tiếng</td>
+</tr>
+<tr>
+<td>Tồn kho (<code>stock.quant</code>)</td>
+<td>5 phút</td>
+</tr>
+<tr>
+<td>Khách hàng (<code>res.partner</code>)</td>
+<td>60 phút</td>
+</tr>
+<tr>
+<td>MST (VietQR)</td>
+<td>10 phút</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="b3-luồng-quản-lý-user-admin">B3. Luồng Quản lý User (ADMIN) </h2>
+<div class="mermaid">flowchart TD
+    classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
+    classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
+    classDef odoo fill:#EDE9FE,stroke:#7C3AED,color:#3b0764
+    classDef db fill:#DCFCE7,stroke:#16A34A,color:#14532d
+    classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
+    classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
+    classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
+
+    A([ADMIN tạo user]):::terminal --&gt; B[Tìm kiếm nhân viên\nGET /admin/employees/search]:::user
+    B --&gt; C[Chọn hr.employee từ Odoo]:::user
+    C --&gt; D{Employee đã có\ntài khoản POS?}:::decision
+    D -- Có --&gt; E([Từ chối\nEmployee đã liên kết]):::warning
+    D -- Chưa --&gt; F[Backend lấy thông tin\ntên, email, SĐT, phòng ban]:::odoo
+    F --&gt; G[ADMIN nhập:\nusername, password]:::user
+    G --&gt; H[Chọn role:\nADMIN / POS User]:::user
+    H --&gt; I[Chọn warehouse + locations]:::user
+    I --&gt; J[INSERT users table\nhr_employee_id + credentials]:::db
+    J --&gt; K([User tạo thành công]):::terminal
+
+    L([ADMIN vô hiệu hóa user]):::terminal --&gt; M[PATCH /admin/users/id/status]:::user
+    M --&gt; N[Set is_active = false]:::db
+    N --&gt; O[Xóa tất cả refresh_tokens\ncủa user]:::db
+    O --&gt; P([User bị vô hiệu hóa\nToken invalidate ngay]):::terminal
+
+    Q([ADMIN mở khóa user]):::terminal --&gt; R[POST /admin/users/id/unlock]:::user
+    R --&gt; S[Reset login_attempts = 0\nis_locked = false]:::db
+    S --&gt; T([User đã mở khóa]):::terminal
+</div><p><strong>Ghi chú:</strong></p>
+<ul>
+<li>Thông tin cá nhân kế thừa từ <code>hr.employee</code> — không nhập thủ công</li>
+<li>1 <code>hr.employee</code> chỉ liên kết 1 user POS</li>
+<li>Admin mặc định không cần <code>hr_employee_id</code></li>
+<li>Vô hiệu hóa → invalidate token ngay lập tức (OQ-M02)</li>
+</ul>
+<hr>
+<h2 id="b4-luồng-reset-password">B4. Luồng Reset Password </h2>
+<div class="mermaid">sequenceDiagram
+    actor Admin as ADMIN
+    actor User as POS User
+    participant FE as Frontend
+    participant BE as Backend (FastAPI)
+    participant DB as PostgreSQL
+    participant SES as AWS SES (SMTP)
+
+    rect rgb(219, 234, 254)
+        Note over Admin,FE: Kịch bản 1: ADMIN reset cho user
+        Admin-&gt;&gt;FE: Bấm "Reset Password" trên user
+        FE-&gt;&gt;BE: POST /admin/users/{id}/reset-password
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,SES: Xử lý hệ thống
+        BE-&gt;&gt;DB: Tạo reset_token + expires_at (1 giờ)
+        BE-&gt;&gt;SES: Gửi email chứa link reset
+        Note over SES: Email gửi tới hr.employee.work_email
+        SES--&gt;&gt;User: Email với link reset password
+    end
+
+    rect rgb(219, 234, 254)
+        Note over User,FE: Kịch bản 2: User tự reset
+        User-&gt;&gt;FE: Bấm "Quên mật khẩu" tại trang login
+        FE-&gt;&gt;BE: POST /auth/forgot-password {email}
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,SES: Xử lý hệ thống
+        BE-&gt;&gt;DB: Tìm user theo email (từ hr.employee)
+        BE-&gt;&gt;DB: Tạo reset_token + expires_at (1 giờ)
+        BE-&gt;&gt;SES: Gửi email chứa link reset
+        SES--&gt;&gt;User: Email với link reset password
+    end
+
+    rect rgb(219, 234, 254)
+        Note over User,FE: Đặt mật khẩu mới
+        User-&gt;&gt;FE: Click link → nhập mật khẩu mới
+        FE-&gt;&gt;BE: POST /auth/reset-password {token, new_password}
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,DB: Xử lý hệ thống
+        BE-&gt;&gt;DB: Validate token + chưa hết hạn
+        BE-&gt;&gt;DB: Update password_hash
+        BE-&gt;&gt;DB: Xóa tất cả refresh_tokens của user
+        BE--&gt;&gt;FE: Thành công → redirect login
+    end
+</div><p><strong>Ghi chú:</strong></p>
+<ul>
+<li>Email lấy từ <code>hr.employee.work_email</code> trên Odoo</li>
+<li>Token reset hết hạn sau 1 giờ</li>
+<li>Password policy: min 8 ký tự, chữ hoa + số + ký tự đặc biệt (OQ-W01)</li>
+<li>Sau reset → xóa tất cả session cũ</li>
+</ul>
+<hr>
+<h2 id="tham-chiếu">Tham chiếu </h2>
+<table>
+<thead>
+<tr>
+<th>Tài liệu</th>
+<th>Mô tả</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="scope.md">scope.md</a></td>
+<td>Scope &amp; Architecture</td>
+</tr>
+<tr>
+<td><a href="api_contract.md">api_contract.md</a></td>
+<td>API Contract (40 endpoints)</td>
+</tr>
+<tr>
+<td><a href="frontend_design.md">frontend_design.md</a></td>
+<td>Thiết kế giao diện</td>
+</tr>
+<tr>
+<td><a href="open_questions.md">open_questions.md</a></td>
+<td>Câu hỏi đã xác nhận</td>
+</tr>
+</tbody>
+</table>
+
+      </div>
+      
+      
+    
+    
+    <script type="module">
+// TODO: If ZenUML gets integrated into mermaid in the future,
+//      we can remove the following lines.
+
+
+var MERMAID_CONFIG = ({"startOnLoad":false});
+if (typeof MERMAID_CONFIG !== 'undefined') {
+  MERMAID_CONFIG.startOnLoad = false
+  MERMAID_CONFIG.cloneCssStyles = false
+  MERMAID_CONFIG.theme = "default"
+}
+
+mermaid.initialize(MERMAID_CONFIG || {})
+if (typeof(window['Reveal']) !== 'undefined') {
+  function mermaidRevealHelper(event) {
+    var currentSlide = event.currentSlide
+    var diagrams = currentSlide.querySelectorAll('div.mermaid')
+    for (var i = 0; i < diagrams.length; i++) {
+      var diagram = diagrams[i]
+      if (!diagram.hasAttribute('data-processed')) {
+        mermaid.init(null, diagram, ()=> {
+          Reveal.slide(event.indexh, event.indexv)
+        })
+      }
+    }
+  }
+  Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
+  Reveal.addEventListener('ready', mermaidRevealHelper)
+  await mermaid.run({
+    nodes: document.querySelectorAll('div.mermaid')
+  })
+} else {
+  await mermaid.run({
+    nodes: document.querySelectorAll('div.mermaid')
+  })
+}
+</script>
+    
+    
+    
+  
+    </body></html>
