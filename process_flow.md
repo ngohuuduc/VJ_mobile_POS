@@ -33,9 +33,6 @@ Các câu hỏi còn mở xem tại [open_questions.md](open_questions.md).
 | A3 | Xuất kho | Auto validate picking + serial + backorder |
 | A4 | Quản lý Backorder | Theo dõi, validate, hủy backorder |
 | A5 | Hủy đơn hàng | Hủy theo trạng thái + phân quyền |
-| A6 | Kiểm tra tồn kho | Tra cứu stock.quant theo location |
-| A7 | Tra cứu MST | VietQR API + TTLCache |
-| A8 | In phiếu bán hàng | Generate PDF (A4/A5) từ template |
 
 ### Phần B — Technical Flows (Kỹ thuật)
 
@@ -45,6 +42,9 @@ Các câu hỏi còn mở xem tại [open_questions.md](open_questions.md).
 | B2 | Làm mới Cache | TTL auto-expire + flush thủ công |
 | B3 | Quản lý User | Tạo user liên kết hr.employee, phân quyền |
 | B4 | Reset Password | Gửi email token qua AWS SES |
+| B5 | Kiểm tra tồn kho | Tra cứu stock.quant theo location |
+| B6 | Tra cứu MST | VietQR API + TTLCache |
+| B7 | In phiếu bán hàng | Generate PDF (A4/A5) từ template |
 
 ---
 
@@ -236,108 +236,6 @@ flowchart TD
 
 ---
 
-## A6. Luồng Kiểm tra tồn kho
-
-```mermaid
-sequenceDiagram
-    actor User as Nhân viên
-    participant FE as Frontend
-    participant BE as Backend (TTLCache)
-    participant Odoo
-
-    rect rgb(219, 234, 254)
-        Note over User,FE: Thao tác người dùng
-        User->>FE: Tìm kiếm sản phẩm
-        FE->>BE: GET /inventory/stock?product_id=X&location_id=Y
-    end
-    rect rgb(241, 245, 249)
-        Note over BE,Odoo: Xử lý hệ thống
-        alt Cache hit (TTL < 5 phút)
-            Note over BE: Trả từ TTLCache in-memory
-        else Cache miss
-            BE->>Odoo: XML-RPC search_read stock.quant
-            Odoo-->>BE: Dữ liệu tồn kho theo location
-            Note over BE: Lưu vào TTLCache (5 phút)
-        end
-        BE-->>FE: Tồn kho theo địa điểm
-    end
-    rect rgb(219, 234, 254)
-        Note over FE,User: Phản hồi người dùng
-        FE-->>User: Hiển thị số lượng có thể bán
-    end
-```
-
----
-
-## A7. Luồng Tra cứu MST
-
-```mermaid
-sequenceDiagram
-    actor User as Thu ngân
-    participant FE as Frontend
-    participant BE as Backend (TTLCache)
-    participant MST as VietQR API
-
-    rect rgb(219, 234, 254)
-        Note over User,FE: Thao tác người dùng
-        User->>FE: Nhập mã số thuế
-        FE->>BE: GET /customers/mst/{tax_code}
-    end
-    rect rgb(241, 245, 249)
-        Note over BE,MST: Xử lý hệ thống
-        alt Cache hit (TTL < 10 phút)
-            Note over BE: Trả từ TTLCache in-memory
-        else Cache miss
-            BE->>MST: GET /v2/business/{tax_code}
-            MST-->>BE: Tên, địa chỉ, trạng thái hoạt động
-            Note over BE: Lưu vào TTLCache (10 phút)
-        end
-        BE-->>FE: Thông tin doanh nghiệp
-    end
-    rect rgb(219, 234, 254)
-        Note over FE,User: Phản hồi người dùng
-        FE-->>User: Auto-fill form khách hàng
-    end
-```
-
----
-
-## A8. Luồng In phiếu bán hàng (Generate PDF)
-
-```mermaid
-sequenceDiagram
-    actor User as Nhân viên
-    participant FE as Frontend
-    participant BE as FastAPI (WeasyPrint + Jinja2)
-    participant DB as PostgreSQL
-
-    rect rgb(219, 234, 254)
-        Note over User,FE: Thao tác người dùng
-        User->>FE: Bấm "In phiếu" → Chọn loại + khổ giấy
-        FE->>BE: GET /print/{receipt_type}?order_id=X&paper_size=A4
-        Note over BE: receipt_type: order_confirm / deposit / payment
-    end
-    rect rgb(241, 245, 249)
-        Note over BE,DB: Xử lý hệ thống
-        BE->>DB: Lấy template HTML/CSS theo loại phiếu
-        DB-->>BE: Template Jinja2
-        BE->>BE: Render template với dữ liệu đơn hàng
-        Note over BE: Bao gồm: số tiền bằng chữ (TV), vùng chữ ký
-        BE->>BE: WeasyPrint: HTML/CSS → PDF binary
-        BE-->>FE: PDF file (Content-Type: application/pdf)
-    end
-    rect rgb(219, 234, 254)
-        Note over FE,User: Phản hồi người dùng
-        FE-->>User: Mở PDF preview / download
-    end
-```
-
-**Ghi chú:**
-- User chọn A4 hoặc A5 khi in (OQ-Z01)
-- Chỉ preview / download, không in trực tiếp (OQ-U02)
-
----
-
 # Phần B — Technical Flows
 
 ---
@@ -525,6 +423,108 @@ sequenceDiagram
 - Token reset hết hạn sau 1 giờ
 - Password policy: min 8 ký tự, chữ hoa + số + ký tự đặc biệt (OQ-W01)
 - Sau reset → xóa tất cả session cũ
+
+---
+
+## B5. Luồng Kiểm tra tồn kho
+
+```mermaid
+sequenceDiagram
+    actor User as Nhân viên
+    participant FE as Frontend
+    participant BE as Backend (TTLCache)
+    participant Odoo
+
+    rect rgb(219, 234, 254)
+        Note over User,FE: Thao tác người dùng
+        User->>FE: Tìm kiếm sản phẩm
+        FE->>BE: GET /inventory/stock?product_id=X&location_id=Y
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,Odoo: Xử lý hệ thống
+        alt Cache hit (TTL < 5 phút)
+            Note over BE: Trả từ TTLCache in-memory
+        else Cache miss
+            BE->>Odoo: XML-RPC search_read stock.quant
+            Odoo-->>BE: Dữ liệu tồn kho theo location
+            Note over BE: Lưu vào TTLCache (5 phút)
+        end
+        BE-->>FE: Tồn kho theo địa điểm
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Phản hồi người dùng
+        FE-->>User: Hiển thị số lượng có thể bán
+    end
+```
+
+---
+
+## B6. Luồng Tra cứu MST
+
+```mermaid
+sequenceDiagram
+    actor User as Thu ngân
+    participant FE as Frontend
+    participant BE as Backend (TTLCache)
+    participant MST as VietQR API
+
+    rect rgb(219, 234, 254)
+        Note over User,FE: Thao tác người dùng
+        User->>FE: Nhập mã số thuế
+        FE->>BE: GET /customers/mst/{tax_code}
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,MST: Xử lý hệ thống
+        alt Cache hit (TTL < 10 phút)
+            Note over BE: Trả từ TTLCache in-memory
+        else Cache miss
+            BE->>MST: GET /v2/business/{tax_code}
+            MST-->>BE: Tên, địa chỉ, trạng thái hoạt động
+            Note over BE: Lưu vào TTLCache (10 phút)
+        end
+        BE-->>FE: Thông tin doanh nghiệp
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Phản hồi người dùng
+        FE-->>User: Auto-fill form khách hàng
+    end
+```
+
+---
+
+## B7. Luồng In phiếu bán hàng (Generate PDF)
+
+```mermaid
+sequenceDiagram
+    actor User as Nhân viên
+    participant FE as Frontend
+    participant BE as FastAPI (WeasyPrint + Jinja2)
+    participant DB as PostgreSQL
+
+    rect rgb(219, 234, 254)
+        Note over User,FE: Thao tác người dùng
+        User->>FE: Bấm "In phiếu" → Chọn loại + khổ giấy
+        FE->>BE: GET /print/{receipt_type}?order_id=X&paper_size=A4
+        Note over BE: receipt_type: order_confirm / deposit / payment
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,DB: Xử lý hệ thống
+        BE->>DB: Lấy template HTML/CSS theo loại phiếu
+        DB-->>BE: Template Jinja2
+        BE->>BE: Render template với dữ liệu đơn hàng
+        Note over BE: Bao gồm: số tiền bằng chữ (TV), vùng chữ ký
+        BE->>BE: WeasyPrint: HTML/CSS → PDF binary
+        BE-->>FE: PDF file (Content-Type: application/pdf)
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Phản hồi người dùng
+        FE-->>User: Mở PDF preview / download
+    end
+```
+
+**Ghi chú:**
+- User chọn A4 hoặc A5 khi in (OQ-Z01)
+- Chỉ preview / download, không in trực tiếp (OQ-U02)
 
 ---
 
