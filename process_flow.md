@@ -47,6 +47,9 @@ Các câu hỏi còn mở xem tại [open_questions.md](open_questions.md).
 | B7 | In phiếu bán hàng | Generate PDF (A4/A5) từ template |
 | B8 | Tích hợp Misa (eInvoice) | Xác thực, tạo hoá đơn nháp, xử lý lỗi |
 | B9 | Tích hợp Đơn vị giao hàng / COD | Tạo vận đơn, nhận callback xác nhận thu tiền |
+| B10 | Tích hợp VNPay API | Payment URL, IPN callback, HMAC-SHA512 |
+| B11 | Tích hợp MoMo API | Payment request, IPN callback, HMAC-SHA256 |
+| B12 | Tích hợp VietQR Payment | Sinh QR chuyển khoản, xác nhận từ ngân hàng |
 
 ---
 
@@ -668,6 +671,170 @@ sequenceDiagram
 - Fallback thủ công khi đơn vị vận chuyển không hỗ trợ webhook
 - Trạng thái COD: `pending_cod` → `cod_collected` → phản ánh vào luồng thanh toán A2
 - Cần bổ sung: danh sách đơn vị vận chuyển tích hợp, cơ chế đối soát định kỳ
+
+---
+
+## B10. Tích hợp VNPay API *(Planned)*
+
+```mermaid
+sequenceDiagram
+    actor User as Khách hàng
+    participant FE as Frontend
+    participant BE as Backend (FastAPI)
+    participant DB as PostgreSQL
+    participant VNPay as VNPay Gateway
+
+    rect rgb(219, 234, 254)
+        Note over User,FE: Khởi tạo thanh toán
+        User->>FE: Xác nhận thanh toán VNPay
+        FE->>BE: POST /payments/vnpay/create {order_id, amount}
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,VNPay: Tạo payment URL
+        BE->>BE: Tạo vnp_params + ký HMAC-SHA512
+        BE->>DB: Lưu payment_ref + trạng thái "pending"
+        BE-->>FE: payment_url
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Redirect khách hàng
+        FE-->>User: Redirect đến VNPay payment page
+        User->>VNPay: Nhập thông tin thẻ / xác nhận
+    end
+    rect rgb(241, 245, 249)
+        Note over VNPay,BE: IPN Callback
+        VNPay->>BE: POST /webhooks/vnpay {vnp_ResponseCode, vnp_SecureHash, ...}
+        BE->>BE: Xác thực HMAC-SHA512
+        alt Thanh toán thành công (00)
+            BE->>DB: Cập nhật trạng thái "paid"
+            BE->>DB: Ghi audit log
+            BE-->>VNPay: 200 OK RspCode=00
+        else Thất bại / hết hạn
+            BE->>DB: Cập nhật trạng thái "failed"
+            BE-->>VNPay: 200 OK RspCode=00
+        end
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Redirect về POS
+        VNPay-->>FE: Redirect return_url?vnp_ResponseCode=00
+        FE-->>User: Hiển thị kết quả thanh toán
+    end
+```
+
+**Ghi chú:**
+- Backend phải trả `200 OK` cho VNPay IPN dù thành công hay thất bại — nếu không VNPay sẽ retry
+- Xác thực `vnp_SecureHash` bắt buộc trước khi xử lý bất kỳ callback nào
+- `return_url` chỉ để hiển thị kết quả cho user — không dùng để cập nhật trạng thái (dùng IPN)
+
+---
+
+## B11. Tích hợp MoMo API *(Planned)*
+
+```mermaid
+sequenceDiagram
+    actor User as Khách hàng
+    participant FE as Frontend
+    participant BE as Backend (FastAPI)
+    participant DB as PostgreSQL
+    participant MoMo as MoMo Gateway
+
+    rect rgb(219, 234, 254)
+        Note over User,FE: Khởi tạo thanh toán
+        User->>FE: Xác nhận thanh toán MoMo
+        FE->>BE: POST /payments/momo/create {order_id, amount}
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,MoMo: Tạo payment request
+        BE->>BE: Tạo request payload + ký HMAC-SHA256
+        BE->>MoMo: POST /v2/gateway/api/create
+        MoMo-->>BE: {payUrl, deeplink, qrCodeUrl}
+        BE->>DB: Lưu orderId MoMo + trạng thái "pending"
+        BE-->>FE: payUrl / qrCodeUrl
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Thanh toán
+        FE-->>User: Redirect payUrl hoặc hiển thị QR deeplink
+        User->>MoMo: Xác nhận trong app MoMo
+    end
+    rect rgb(241, 245, 249)
+        Note over MoMo,BE: IPN Callback
+        MoMo->>BE: POST /webhooks/momo {resultCode, signature, ...}
+        BE->>BE: Xác thực HMAC-SHA256
+        alt Thành công (resultCode = 0)
+            BE->>DB: Cập nhật trạng thái "paid"
+            BE->>DB: Ghi audit log
+            BE-->>MoMo: 200 OK
+        else Thất bại
+            BE->>DB: Cập nhật trạng thái "failed"
+            BE-->>MoMo: 200 OK
+        end
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Kết quả
+        FE-->>User: Hiển thị kết quả thanh toán
+    end
+```
+
+**Ghi chú:**
+- Hỗ trợ 2 luồng: redirect (`payUrl`) trên desktop, QR deeplink trên mobile
+- `resultCode = 0` là thành công; các mã khác là lỗi — xem tài liệu MoMo
+- Xác thực signature bắt buộc trước khi xử lý IPN
+
+---
+
+## B12. Tích hợp VietQR Payment *(Planned)*
+
+> **Lưu ý phân biệt**: Luồng này là VietQR **thanh toán** (sinh QR chuyển khoản ngân hàng) — khác hoàn toàn với VietQR MST lookup (B6) dùng để tra cứu mã số thuế.
+
+```mermaid
+sequenceDiagram
+    actor User as Khách hàng
+    participant FE as Frontend
+    participant BE as Backend (FastAPI)
+    participant DB as PostgreSQL
+    participant Bank as Ngân hàng đối tác (API)
+
+    rect rgb(219, 234, 254)
+        Note over User,FE: Khởi tạo thanh toán
+        User->>FE: Chọn thanh toán VietQR
+        FE->>BE: POST /payments/vietqr/create {order_id, amount}
+    end
+    rect rgb(241, 245, 249)
+        Note over BE,Bank: Sinh QR code
+        BE->>BE: Tạo nội dung QR theo chuẩn VietQR\n(bank_id, account_no, amount, description)
+        BE->>Bank: POST /qr/generate (nếu dùng API ngân hàng)
+        Bank-->>BE: QR image / QR string
+        BE->>DB: Lưu payment_ref + trạng thái "pending"
+        BE-->>FE: qr_data / qr_image_url
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Hiển thị QR
+        FE-->>User: Hiển thị QR code trên màn hình
+        User->>Bank: Quét QR bằng app ngân hàng → xác nhận chuyển khoản
+    end
+    rect rgb(241, 245, 249)
+        Note over Bank,BE: Xác nhận giao dịch
+        alt Ngân hàng có webhook
+            Bank->>BE: POST /webhooks/vietqr {transaction_id, amount, description}
+            BE->>BE: Xác thực + đối chiếu description với payment_ref
+            BE->>DB: Cập nhật trạng thái "paid"
+            BE->>DB: Ghi audit log
+        else Fallback thủ công
+            Note over FE: Nhân viên bấm "Xác nhận đã nhận tiền"
+            FE->>BE: PATCH /payments/vietqr/{ref}/confirm
+            BE->>DB: Cập nhật trạng thái "paid"
+        end
+    end
+    rect rgb(219, 234, 254)
+        Note over FE,User: Kết quả
+        FE-->>User: Hiển thị xác nhận thanh toán thành công
+    end
+```
+
+**Ghi chú:**
+- QR chuẩn VietQR có thể sinh tĩnh (không cần API ngân hàng) nếu chỉ cần nhúng số tài khoản + số tiền
+- Cơ chế xác nhận phụ thuộc vào ngân hàng đối tác — không phải ngân hàng nào cũng có webhook
+- `description` (nội dung chuyển khoản) dùng để đối chiếu tự động — cần format chuẩn (vd: mã đơn hàng)
+- Fallback thủ công là bắt buộc khi webhook không khả dụng
 
 ---
 
