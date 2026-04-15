@@ -1,8 +1,8 @@
 # VJ Mobile POS — Process Flow
 
 > Trạng thái: Draft  
-> Cập nhật: 2026-04-14  
-> Phiên bản: 0.6
+> Cập nhật: 2026-04-15  
+> Phiên bản: 0.7
 
 Chỉ bao gồm các luồng đã xác định đủ nội dung.  
 Các câu hỏi còn mở xem tại [open_questions.md](open_questions.md).
@@ -293,7 +293,7 @@ sequenceDiagram
     participant FE as Frontend (Vue)
     participant BE as Backend (FastAPI)
     participant DB as PostgreSQL
-    participant Odoo as Odoo (hr.employee)
+    participant Odoo as Odoo (XML-RPC)
 
     rect rgb(219, 234, 254)
         Note over User,FE: Thao tác người dùng
@@ -301,7 +301,7 @@ sequenceDiagram
         FE->>BE: POST /auth/login
     end
     rect rgb(241, 245, 249)
-        Note over BE,Odoo: Xử lý hệ thống
+        Note over BE,Odoo: Xác thực
         BE->>DB: Kiểm tra credentials + check is_active + is_locked
         alt Sai >= 5 lần
             BE-->>FE: 401 ACCOUNT_LOCKED
@@ -314,11 +314,26 @@ sequenceDiagram
         BE->>DB: Lưu refresh token (bảng refresh_tokens)
         BE-->>FE: Access token + Refresh token + user info + employee info
     end
+    rect rgb(241, 245, 249)
+        Note over BE,Odoo: Pre-fetch song song (sau login thành công)
+        par
+            BE->>Odoo: product.product + product.pricelist (sản phẩm + giá)
+        and
+            BE->>Odoo: product.category (danh mục sản phẩm)
+        and
+            BE->>Odoo: product.pricelist (bảng giá)
+        and
+            BE->>Odoo: stock.quant (tồn kho theo locations của user)
+        end
+        Note over BE: Cache warm — FE nhận prefetch_ready: true
+        BE-->>FE: prefetch_ready: true (qua WebSocket hoặc polling)
+    end
     rect rgb(219, 234, 254)
         Note over FE,User: Phản hồi người dùng
         FE->>FE: Lưu token (memory) + refresh token (localStorage)
         FE->>FE: Khởi động idle watcher (5 phút)
-        FE-->>User: Vào màn hình chính
+        FE->>FE: Hiển thị loading spinner "Đang tải dữ liệu..."
+        FE-->>User: Vào màn hình chính (sau khi cache warm)
     end
 ```
 
@@ -327,6 +342,8 @@ sequenceDiagram
 - Thông tin cá nhân (tên, email, SĐT...) lấy từ `hr.employee` trên Odoo
 - Khóa tài khoản sau 5 lần sai → ADMIN mở thủ công (OQ-M04, OQ-W03)
 - Idle timeout 5 phút → tự đăng xuất (OQ-M03)
+- Pre-fetch chạy song song ngay sau login — 4 Odoo calls đồng thời → giảm tải lần đầu dùng SP/tồn kho
+- FE hiển thị loading cho đến khi `prefetch_ready: true` → không cho vào màn hình chính sớm khi cache chưa warm
 
 ---
 
@@ -338,10 +355,18 @@ flowchart TD
     classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
     classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
     classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
+    classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
 
     A([Trigger]):::terminal --> B{Loại trigger}:::decision
     B -- Thủ công\nADMIN bấm Refresh --> C[POST /admin/cache/flush]:::user
     B -- Tự động\nTTL hết hạn --> D[TTLCache tự expire\nkhông cần tác động]:::system
+    B -- Pre-fetch\nsau login --> PF[Fetch song song 4 Odoo calls\nproduct / category / pricelist / stock]:::system
+    B -- Background refresh\nTTL còn < 20% --> BR{Acquire\nstampede lock?}:::decision
+    BR -- Được lock --> BRF[Fetch Odoo ngầm\ncập nhật cache]:::system
+    BR -- Lock đang giữ --> BRS([Bỏ qua — process khác đang refresh]):::terminal
+    BRF --> BRD[Giải phóng lock]:::system
+    BRD --> I
+    PF --> I
     C --> E{Phạm vi flush}:::decision
     E -- Sản phẩm / Giá --> F[cache.clear product_cache]:::system
     E -- Pricelist --> G[cache.clear pricelist_cache]:::system

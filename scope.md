@@ -141,19 +141,35 @@ graph TD
 - JWT access token (TTL ngắn) + refresh token (TTL dài, lưu PostgreSQL)
 - Logout: xóa refresh token khỏi DB — không cần JWT blacklist
 
-### 4.3 Chiến lược Cache
+### 4.3 Chiến lược Cache & Pre-fetch
 
-**In-memory TTLCache** (`cachetools`, trong FastAPI process) — hot data, tự expire, không cần service ngoài:
+Mục tiêu: **giảm thiểu số lần gọi Odoo XML-RPC** bằng cách kết hợp TTLCache in-memory với pre-fetch chủ động — dữ liệu hot được nạp sẵn trước khi người dùng cần.
 
-| Dữ liệu | TTL | Ghi chú |
-|---|---|---|
-| Danh mục sản phẩm, giá | 30 phút | Flush thủ công khi cập nhật trên Odoo |
-| Thông tin khách hàng | 60 phút | On-demand |
-| Tồn kho (`stock.quant`) | 5 phút | Chấp nhận được vì không giao dịch đồng thời |
-| Pricelist (fixed price) | 1 giờ | 1 pricelist duy nhất, flush thủ công |
-| Kết quả tra cứu MST | 10 phút | VietQR API |
-| Danh mục SP (`product.category`) | 8 tiếng | Flush riêng khi cần |
-| Danh sách khách hàng | 60 phút | Tìm kiếm on-demand, cache kết quả |
+**In-memory TTLCache** (`cachetools`, trong FastAPI process) — tự expire, không cần service ngoài:
+
+| Dữ liệu | TTL | Chiến lược | Ghi chú |
+|---|---|---|---|
+| Sản phẩm + giá | 30 phút | **Pre-fetch** khi login | Nạp toàn bộ product list vào cache ngay khi user đăng nhập — tìm kiếm sản phẩm không cần gọi Odoo |
+| Danh mục SP (`product.category`) | 8 tiếng | **Pre-fetch** khi login | Hiếm thay đổi — load 1 lần, dùng cả ngày |
+| Pricelist (fixed price) | 1 giờ | **Pre-fetch** khi login | 1 pricelist duy nhất, flush thủ công khi cập nhật |
+| Tồn kho (`stock.quant`) | 5 phút | **Pre-fetch** theo location user | Nạp tồn kho cho tất cả location được gán của user ngay sau login |
+| Khách hàng (`res.partner`) | 60 phút | **On-demand** + cache | Fetch khi tìm kiếm, cache kết quả — không pre-fetch toàn bộ |
+| MST (VietQR) | 10 phút | **On-demand** + cache | Fetch khi nhập MST, cache kết quả |
+
+**Luồng Pre-fetch khi login:**
+```
+User login thành công
+  → Song song:
+      ├── Load products + prices     (Odoo: product.product + pricelist)
+      ├── Load product categories    (Odoo: product.category)
+      ├── Load pricelist             (Odoo: product.pricelist)
+      └── Load stock by location     (Odoo: stock.quant — theo location của user)
+  → Cache warm → FE nhận token + báo hiệu "ready"
+```
+
+**Background refresh:**
+- Khi TTL còn < 20% (vd: sản phẩm còn < 6 phút) → backend tự refresh ngầm, không block request
+- Tránh cache stampede: chỉ 1 coroutine refresh tại một thời điểm (lock per cache key)
 
 **PostgreSQL** — dữ liệu cần persistence qua restart:
 
