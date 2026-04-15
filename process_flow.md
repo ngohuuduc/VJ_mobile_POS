@@ -13,10 +13,9 @@ Các câu hỏi còn mở xem tại [open_questions.md](open_questions.md).
 
 | Màu | Ý nghĩa |
 |---|---|
-| 🔵 Xanh dương | Thao tác của **người dùng** |
-| ⬜ Xám nhạt | Xử lý **hệ thống** / Backend |
-| 🟣 Tím nhạt | Thao tác trên **Odoo** (XML-RPC) |
-| 🟢 Xanh lá | Truy vấn / ghi **Database** |
+| 🔵 Xanh dương | Thao tác của **Nhân viên bán hàng / Thu ngân** |
+| 🩵 Xanh ngọc | Thao tác / Thông báo liên quan **Kế Toán Thuế** |
+| ⬜ Xám nhạt | Xử lý **hệ thống** (Backend / Odoo / Database) |
 | 🟡 Vàng | Điểm **quyết định** |
 | 🔴 Đỏ nhạt | **Cảnh báo** / Từ chối |
 
@@ -33,6 +32,7 @@ Các câu hỏi còn mở xem tại [open_questions.md](open_questions.md).
 | A3 | Xuất kho | Auto validate picking + serial + backorder |
 | A4 | Quản lý Backorder | Theo dõi, validate, hủy backorder |
 | A5 | Hủy đơn hàng | Hủy theo trạng thái + phân quyền |
+| A6 | Xuất hoá đơn điện tử | Tạo nháp trên Misa + thông báo kế toán thuế |
 
 ### Phần B — Technical Flows (Kỹ thuật)
 
@@ -45,6 +45,8 @@ Các câu hỏi còn mở xem tại [open_questions.md](open_questions.md).
 | B5 | Kiểm tra tồn kho | Tra cứu stock.quant theo location |
 | B6 | Tra cứu MST | VietQR API + TTLCache |
 | B7 | In phiếu bán hàng | Generate PDF (A4/A5) từ template |
+| B8 | Tích hợp Misa (eInvoice) | Xác thực, tạo hoá đơn nháp, xử lý lỗi |
+| B9 | Tích hợp Đơn vị giao hàng / COD | Tạo vận đơn, nhận callback xác nhận thu tiền |
 
 ---
 
@@ -58,8 +60,7 @@ Các câu hỏi còn mở xem tại [open_questions.md](open_questions.md).
 flowchart TD
     classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
     classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
-    classDef odoo fill:#EDE9FE,stroke:#7C3AED,color:#3b0764
-    classDef db fill:#DCFCE7,stroke:#16A34A,color:#14532d
+    classDef accountant fill:#CCFBF1,stroke:#0D9488,color:#134E4A
     classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
     classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
     classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
@@ -75,10 +76,10 @@ flowchart TD
     H -- Có --> C
     H -- Không --> I[Xem lại đơn hàng\ngiá / số lượng]:::user
     I --> J{Hành động}:::decision
-    J -- Lưu nháp --> K[INSERT draft_orders\nexpires_at = now + 8h]:::db
+    J -- Lưu nháp --> K[INSERT draft_orders\nexpires_at = now + 8h]:::system
     K --> L([Đơn nháp lưu thành công]):::terminal
-    J -- Xác nhận --> M[sale.order.create\nsale.order.action_confirm]:::odoo
-    M --> N[Odoo tự tạo stock.picking]:::odoo
+    J -- Xác nhận --> M[sale.order.create\nsale.order.action_confirm]:::system
+    M --> N[Odoo tự tạo stock.picking]:::system
     N --> O([Tiếp theo: Luồng A3 & A2]):::terminal
     J -- Hủy --> P([Kết thúc]):::terminal
 ```
@@ -96,8 +97,7 @@ flowchart TD
 flowchart TD
     classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
     classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
-    classDef odoo fill:#EDE9FE,stroke:#7C3AED,color:#3b0764
-    classDef db fill:#DCFCE7,stroke:#16A34A,color:#14532d
+    classDef accountant fill:#CCFBF1,stroke:#0D9488,color:#134E4A
     classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
     classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
     classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
@@ -124,15 +124,21 @@ flowchart TD
     F -- Chuyển khoản --> H[Ghi nhận số tiền\nvà ngân hàng]:::user
     F -- VNPay / MoMo --> I[Xác nhận thủ công\nsau khi khách thanh toán]:::user
     F -- Thẻ tín dụng --> J[Xác nhận thủ công\nsau khi máy POS xác nhận]:::user
+    F -- COD --> COD1[Chọn đơn vị vận chuyển\nvà ghi nhận mã vận đơn]:::user
+    COD1 --> COD2[Hệ thống ghi nhận\nthu hộ COD — chờ xác nhận]:::system
+    COD2 --> COD3{Đơn vị vận chuyển\nxác nhận đã thu?}:::decision
+    COD3 -- Chưa --> COD4([Đơn ở trạng thái\nchờ thu hộ COD]):::warning
+    COD3 -- Đã thu --> COD5[Ghi nhận số tiền\nthực thu từ đơn vị vận chuyển]:::user
+    COD5 --> K
     G --> K{Còn thiếu?\nThêm phương thức?}:::decision
     H --> K
     I --> K
     J --> K
     K -- Thêm phương thức --> E
-    K -- Hoàn tất --> L[Tạo account.move draft\ntrên Odoo]:::odoo
-    L --> M[Tạo account.payment\nlinked to invoice]:::odoo
-    M --> N[Ghi audit log]:::db
-    N --> O([Hoàn tất\nKế toán post invoice trên Odoo]):::terminal
+    K -- Hoàn tất --> L[Tạo account.move draft\ntrên Odoo]:::system
+    L --> M[Tạo account.payment\nlinked to invoice]:::system
+    M --> N[Ghi audit log]:::system
+    N --> O([Hoàn tất\nKế toán post invoice trên Odoo]):::accountant
 ```
 
 **Ghi chú:**
@@ -140,6 +146,7 @@ flowchart TD
 - Hỗ trợ đặt cọc nhiều lần (OQ-O01)
 - Đơn cọc không hết hạn (OQ-O02)
 - Nhiều phương thức trong 1 đơn (OQ-C03)
+- **COD**: Đơn vị vận chuyển thu hộ tiền mặt — đơn ở trạng thái *chờ thu hộ* cho đến khi xác nhận thực thu; mã vận đơn bắt buộc
 
 ---
 
@@ -149,24 +156,23 @@ flowchart TD
 flowchart TD
     classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
     classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
-    classDef odoo fill:#EDE9FE,stroke:#7C3AED,color:#3b0764
-    classDef db fill:#DCFCE7,stroke:#16A34A,color:#14532d
+    classDef accountant fill:#CCFBF1,stroke:#0D9488,color:#134E4A
     classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
     classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
     classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
 
-    A([sale.order xác nhận]):::terminal --> B[Odoo tạo stock.picking tự động]:::odoo
+    A([sale.order xác nhận]):::terminal --> B[Odoo tạo stock.picking tự động]:::system
     B --> C[Kiểm tra stock.quant\ntheo location của đơn hàng]:::system
     C --> D{Đủ hàng?}:::decision
     D -- Đủ toàn bộ --> E{Có Serial Number?}:::decision
     D -- Thiếu một phần --> F[Hiển thị cảnh báo\ndanh sách hàng thiếu + SL]:::warning
-    F --> G[Validate phần có hàng\nTạo backorder cho phần thiếu]:::odoo
+    F --> G[Validate phần có hàng\nTạo backorder cho phần thiếu]:::system
     G --> H([Backorder → Luồng A4]):::terminal
-    E -- Không --> I[Auto validate picking\nbutton_validate]:::odoo
+    E -- Không --> I[Auto validate picking\nbutton_validate]:::system
     E -- Có --> J[Gợi ý serial từ stock.lot\ntheo sản phẩm đã chọn]:::system
     J --> K[POS user chọn / nhập serial]:::user
     K --> I
-    I --> L[Tồn kho cập nhật trên Odoo]:::odoo
+    I --> L[Tồn kho cập nhật trên Odoo]:::system
     L --> M[Invalidate stock_cache]:::system
     M --> N([Hoàn tất xuất kho]):::terminal
 ```
@@ -179,8 +185,7 @@ flowchart TD
 flowchart TD
     classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
     classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
-    classDef odoo fill:#EDE9FE,stroke:#7C3AED,color:#3b0764
-    classDef db fill:#DCFCE7,stroke:#16A34A,color:#14532d
+    classDef accountant fill:#CCFBF1,stroke:#0D9488,color:#134E4A
     classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
     classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
     classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
@@ -193,15 +198,15 @@ flowchart TD
     E --> F{Đủ hàng?}:::decision
     F -- Chưa đủ --> G([Thông báo: vẫn thiếu\nChờ nhập kho trên Odoo]):::warning
     F -- Đủ --> H{Có Serial Number?}:::decision
-    H -- Không --> I[Validate backorder picking]:::odoo
+    H -- Không --> I[Validate backorder picking]:::system
     H -- Có --> J[Gợi ý serial\ntừ stock.lot]:::system
     J --> K[POS user chọn / nhập serial]:::user
     K --> I
-    I --> L[Tồn kho cập nhật trên Odoo]:::odoo
+    I --> L[Tồn kho cập nhật trên Odoo]:::system
     L --> M[Invalidate stock_cache]:::system
     M --> N([Backorder hoàn tất]):::terminal
     C -- Hủy backorder --> O{Role?}:::decision
-    O -- ADMIN --> P[Hủy backorder picking\ntrên Odoo]:::odoo
+    O -- ADMIN --> P[Hủy backorder picking\ntrên Odoo]:::system
     P --> Q([Backorder đã hủy]):::terminal
     O -- POS User --> R([Từ chối\nLiên hệ ADMIN]):::warning
 ```
@@ -214,25 +219,62 @@ flowchart TD
 flowchart TD
     classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
     classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
-    classDef odoo fill:#EDE9FE,stroke:#7C3AED,color:#3b0764
-    classDef db fill:#DCFCE7,stroke:#16A34A,color:#14532d
+    classDef accountant fill:#CCFBF1,stroke:#0D9488,color:#134E4A
     classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
     classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
     classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
 
     A([Yêu cầu hủy đơn]):::terminal --> B[Nhân viên chọn đơn cần hủy]:::user
     B --> C{Trạng thái đơn?}:::decision
-    C -- Draft --> D[sale.order.action_cancel]:::odoo
-    D --> E[Xóa draft_orders trong DB]:::db
-    E --> F[Ghi audit log]:::db
+    C -- Draft --> D[sale.order.action_cancel]:::system
+    D --> E[Xóa draft_orders trong DB]:::system
+    E --> F[Ghi audit log]:::system
     F --> G([Đơn đã hủy]):::terminal
     C -- Đã xác nhận\nChưa xuất kho --> H{Role người dùng?}:::decision
-    H -- ADMIN --> I[Hủy stock.picking\naction_cancel]:::odoo
-    I --> J[sale.order.action_cancel]:::odoo
+    H -- ADMIN --> I[Hủy stock.picking\naction_cancel]:::system
+    I --> J[sale.order.action_cancel]:::system
     J --> F
     H -- POS User --> K([Từ chối\nYêu cầu liên hệ ADMIN]):::warning
     C -- Đã xuất kho --> L([Không cho phép\nCần xử lý trên Odoo]):::warning
 ```
+
+---
+
+## A6. Luồng Xuất hoá đơn điện tử (Misa)
+
+```mermaid
+flowchart TD
+    classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
+    classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
+    classDef accountant fill:#CCFBF1,stroke:#0D9488,color:#134E4A
+    classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
+    classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
+    classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
+
+    A([Thanh toán hoàn tất\nLuồng A2]):::terminal --> B[Hệ thống tổng hợp dữ liệu\nthông tin đơn hàng + khách hàng]:::system
+    B --> C{Khách hàng\ncó MST?}:::decision
+    C -- Có --> D[Đưa MST + tên + địa chỉ\nvào nội dung hoá đơn]:::system
+    C -- Không --> E[Đưa tên + SĐT\nvào nội dung hoá đơn]:::system
+    D --> F[Tạo payload hoá đơn\ndựa trên nội dung phiếu bán hàng]:::system
+    E --> F
+    F --> G[POST /einvoice/misa\nTạo hoá đơn nháp trên Misa]:::system
+    G --> H{Misa API\nphản hồi?}:::decision
+    H -- Thành công --> I[Lưu misa_invoice_id\nvào DB]:::system
+    I --> J[Gửi email thông báo\nđến kế toán thuế]:::accountant
+    J --> K([Hoá đơn nháp đã tạo\nKế toán thuế xem xét & phát hành]):::accountant
+    H -- Thất bại --> L[Ghi lỗi vào audit log]:::system
+    L --> M[Thông báo lỗi\ncho nhân viên POS]:::warning
+    M --> N{Thử lại?}:::decision
+    N -- Có --> G
+    N -- Không --> P[Gửi email thông báo lỗi\nđến kế toán thuế]:::accountant
+    P --> O([Xử lý thủ công trên Misa]):::warning
+```
+
+**Ghi chú:**
+- Hoá đơn chỉ được tạo ở trạng thái **nháp** — kế toán thuế phát hành chính thức trên Misa
+- Nội dung hoá đơn dựa trên phiếu bán hàng (A8 / B7): danh sách sản phẩm, số lượng, đơn giá, tổng tiền
+- Email thông báo gửi đến địa chỉ kế toán thuế được cấu hình trong hệ thống
+- Nếu Misa API thất bại: audit log lưu lại để xử lý thủ công, không ảnh hưởng đến đơn hàng
 
 ---
 
@@ -332,8 +374,7 @@ flowchart TD
 flowchart TD
     classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
     classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
-    classDef odoo fill:#EDE9FE,stroke:#7C3AED,color:#3b0764
-    classDef db fill:#DCFCE7,stroke:#16A34A,color:#14532d
+    classDef accountant fill:#CCFBF1,stroke:#0D9488,color:#134E4A
     classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
     classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
     classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
@@ -342,20 +383,20 @@ flowchart TD
     B --> C[Chọn hr.employee từ Odoo]:::user
     C --> D{Employee đã có\ntài khoản POS?}:::decision
     D -- Có --> E([Từ chối\nEmployee đã liên kết]):::warning
-    D -- Chưa --> F[Backend lấy thông tin\ntên, email, SĐT, phòng ban]:::odoo
+    D -- Chưa --> F[Backend lấy thông tin\ntên, email, SĐT, phòng ban]:::system
     F --> G[ADMIN nhập:\nusername, password]:::user
     G --> H[Chọn role:\nADMIN / POS User]:::user
     H --> I[Chọn warehouse + locations]:::user
-    I --> J[INSERT users table\nhr_employee_id + credentials]:::db
+    I --> J[INSERT users table\nhr_employee_id + credentials]:::system
     J --> K([User tạo thành công]):::terminal
 
     L([ADMIN vô hiệu hóa user]):::terminal --> M[PATCH /admin/users/id/status]:::user
-    M --> N[Set is_active = false]:::db
-    N --> O[Xóa tất cả refresh_tokens\ncủa user]:::db
+    M --> N[Set is_active = false]:::system
+    N --> O[Xóa tất cả refresh_tokens\ncủa user]:::system
     O --> P([User bị vô hiệu hóa\nToken invalidate ngay]):::terminal
 
     Q([ADMIN mở khóa user]):::terminal --> R[POST /admin/users/id/unlock]:::user
-    R --> S[Reset login_attempts = 0\nis_locked = false]:::db
+    R --> S[Reset login_attempts = 0\nis_locked = false]:::system
     S --> T([User đã mở khóa]):::terminal
 ```
 
@@ -525,6 +566,108 @@ sequenceDiagram
 **Ghi chú:**
 - User chọn A4 hoặc A5 khi in (OQ-Z01)
 - Chỉ preview / download, không in trực tiếp (OQ-U02)
+
+---
+
+## B8. Tích hợp Misa (eInvoice) *(Planned)*
+
+```mermaid
+sequenceDiagram
+    actor BE as Backend (FastAPI)
+    participant MisaAuth as Misa Auth API
+    participant MisaInv as Misa Invoice API
+    participant DB as PostgreSQL
+    participant SES as AWS SES
+
+    rect rgb(241, 245, 249)
+        Note over BE,MisaAuth: Xác thực
+        BE->>MisaAuth: POST /auth/token {client_id, client_secret}
+        MisaAuth-->>BE: access_token (TTL ngắn)
+        Note over BE: Lưu token vào memory cache
+    end
+
+    rect rgb(241, 245, 249)
+        Note over BE,MisaInv: Tạo hoá đơn nháp
+        BE->>MisaInv: POST /einvoices {order_data, customer_info, line_items}
+        alt Thành công
+            MisaInv-->>BE: 200 {invoice_id, status: "draft"}
+            BE->>DB: Lưu misa_invoice_id + trạng thái "draft"
+            BE->>SES: Gửi email thông báo kế toán thuế
+        else Lỗi xác thực (401)
+            MisaInv-->>BE: 401 Unauthorized
+            BE->>MisaAuth: Refresh token
+            Note over BE: Retry request (tối đa 2 lần)
+        else Lỗi dữ liệu (400) hoặc lỗi server (5xx)
+            MisaInv-->>BE: 4xx / 5xx
+            BE->>DB: Ghi lỗi vào audit_log\n{order_id, error_code, payload}
+            BE->>SES: Gửi email thông báo lỗi kế toán thuế
+        end
+    end
+```
+
+**Ghi chú:**
+- Access token Misa lưu cache in-memory, tự refresh khi hết hạn
+- Payload hoá đơn dựa trên nội dung phiếu bán hàng (B7): danh sách SP, số lượng, đơn giá, thuế
+- Hoá đơn tạo ở trạng thái `draft` — kế toán phát hành chính thức trên portal Misa
+- Mọi lỗi đều ghi `audit_log` để xử lý thủ công, không ảnh hưởng đến đơn hàng
+- Cần bổ sung: `client_id`, `client_secret`, `company_tax_code` vào config
+
+---
+
+## B9. Tích hợp Đơn vị giao hàng / COD *(Planned)*
+
+```mermaid
+sequenceDiagram
+    actor Staff as Nhân viên POS
+    participant FE as Frontend
+    participant BE as Backend (FastAPI)
+    participant DB as PostgreSQL
+    participant Carrier as Đơn vị vận chuyển (API)
+
+    rect rgb(219, 234, 254)
+        Note over Staff,FE: Tạo vận đơn
+        Staff->>FE: Xác nhận COD — chọn đơn vị vận chuyển\nnhập địa chỉ giao hàng
+        FE->>BE: POST /shipments {order_id, carrier_id, address, cod_amount}
+    end
+
+    rect rgb(241, 245, 249)
+        Note over BE,Carrier: Gửi yêu cầu tạo vận đơn
+        BE->>Carrier: POST /orders {recipient, items, cod_amount}
+        alt Thành công
+            Carrier-->>BE: 200 {tracking_code, estimated_delivery}
+            BE->>DB: Lưu tracking_code + trạng thái "pending_cod"
+            BE-->>FE: Trả tracking_code cho nhân viên
+        else Thất bại
+            Carrier-->>BE: 4xx / 5xx
+            BE->>DB: Ghi lỗi vào audit_log
+            BE-->>FE: Thông báo lỗi — tạo vận đơn thủ công
+        end
+    end
+
+    rect rgb(241, 245, 249)
+        Note over Carrier,BE: Callback xác nhận thu tiền
+        Carrier->>BE: POST /webhooks/cod-collected\n{tracking_code, collected_amount, collected_at}
+        BE->>BE: Xác thực webhook signature
+        BE->>DB: Cập nhật trạng thái "cod_collected"\nghi nhận collected_amount + thời gian
+        BE->>DB: Ghi audit_log thanh toán COD
+        BE-->>Carrier: 200 OK
+    end
+
+    rect rgb(219, 234, 254)
+        Note over FE,Staff: Nhân viên xác nhận thủ công (fallback)
+        Note over FE: Nếu không có webhook:\nnhân viên bấm "Xác nhận đã thu" trên FE
+        Staff->>FE: Xác nhận thu hộ COD thủ công
+        FE->>BE: PATCH /shipments/{tracking_code}/confirm-cod
+        BE->>DB: Cập nhật trạng thái "cod_collected"
+    end
+```
+
+**Ghi chú:**
+- Hỗ trợ nhiều đơn vị vận chuyển — cấu hình `carrier_id` và endpoint riêng cho từng đơn vị
+- Webhook signature cần xác thực bằng HMAC trước khi xử lý
+- Fallback thủ công khi đơn vị vận chuyển không hỗ trợ webhook
+- Trạng thái COD: `pending_cod` → `cod_collected` → phản ánh vào luồng thanh toán A2
+- Cần bổ sung: danh sách đơn vị vận chuyển tích hợp, cơ chế đối soát định kỳ
 
 ---
 
