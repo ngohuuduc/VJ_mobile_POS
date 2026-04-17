@@ -1,14 +1,14 @@
 # VJ Mobile POS — Scope & Architecture Document
 
 > Trạng thái: Draft  
-> Cập nhật: 2026-04-15  
-> Phiên bản: 0.5
+> Cập nhật: 2026-04-17  
+> Phiên bản: 0.6
 
 ---
 
 ## 1. Tổng quan dự án
 
-VJ Mobile POS là một ứng dụng web POS nhẹ, chạy trên trình duyệt, tích hợp với hệ thống Odoo 14 CE thông qua XML-RPC.
+VJ Mobile POS là một ứng dụng web POS nhẹ, chạy trên trình duyệt, tích hợp với hệ thống Odoo 14 CE thông qua JSON-RPC.
 
 **Thiết bị & trình duyệt mục tiêu:**
 - Máy tính — Chrome (desktop layout)
@@ -106,7 +106,7 @@ graph TD
     NGINX -->|"proxy_pass /api/* (internal)"| FastAPI
     FastAPI <-->|SQL| PG
     FastAPI <-->|read / write| ImgStore
-    FastAPI -->|XML-RPC| Odoo
+    FastAPI -->|JSON-RPC| Odoo
     FastAPI -->|HTTPS REST| VietQR
     FastAPI -->|SMTP| SES
     FastAPI -.->|"HTTPS REST — Planned"| Misa
@@ -128,14 +128,14 @@ graph TD
 | Auth | JWT (access + refresh token) | Stateless |
 | Reverse Proxy | NGINX | Single entry point :443 — SSL termination, serve Vue static build (`/`), proxy_pass API calls (`/api/*`) tới FastAPI nội bộ, serve ảnh sản phẩm (`/media/*`) |
 | Container | Docker Compose | Server riêng với Odoo |
-| Odoo connector | `xmlrpc.client` (Python built-in) | Service account model |
+| Odoo connector | httpx async — JSON-RPC | Tránh control-byte bug của XML-RPC. Singleton + semaphore 8 RPC đồng thời, timeout 30s |
 | PDF generation | `WeasyPrint` + `Jinja2` (Python, backend) | FastAPI render HTML/CSS template → PDF binary |
 | Ảnh sản phẩm | Local storage (server) | ADMIN upload trong app, backend resize + crop → thumbnail. Max 5MB |
 | Email | AWS SES via `smtplib` | Reset password, thông báo (mở rộng sau) |
 
 ### 4.2 Mô hình Auth — Service Account
 
-- Backend duy trì **1 Odoo service account** dùng chung cho tất cả lời gọi XML-RPC
+- Backend duy trì **1 Odoo service account** dùng chung cho tất cả lời gọi JSON-RPC
 - **Service account được cấp toàn quyền (admin) trên Odoo** — phân quyền kiểm soát hoàn toàn tại tầng backend
 - Người dùng đăng nhập vào hệ thống backend riêng (PostgreSQL)
 - JWT access token (TTL ngắn) + refresh token (TTL dài, lưu PostgreSQL)
@@ -143,7 +143,7 @@ graph TD
 
 ### 4.3 Chiến lược Cache & Pre-fetch
 
-Mục tiêu: **giảm thiểu số lần gọi Odoo XML-RPC** bằng cách kết hợp TTLCache in-memory với pre-fetch chủ động — dữ liệu hot được nạp sẵn trước khi người dùng cần.
+Mục tiêu: **giảm thiểu số lần gọi Odoo JSON-RPC** bằng cách kết hợp TTLCache in-memory với pre-fetch chủ động — dữ liệu hot được nạp sẵn trước khi người dùng cần.
 
 **In-memory TTLCache** (`cachetools`, trong FastAPI process) — tự expire, không cần service ngoài:
 
@@ -198,6 +198,8 @@ User login thành công
 | Pricelist | `product.pricelist` | `get_product_price` |
 | Nhân viên | `hr.employee` | `search_read` (lấy thông tin cá nhân khi tạo user POS) |
 
+Backend dùng **JSON-RPC** (qua `httpx` async) để gọi các method trên, không dùng `xmlrpc.client` — tránh bug control-byte trên một số payload Odoo 14 CE.
+
 ### 5.2 Ghi chú thiết kế quan trọng
 
 - **Service account**: Cấp toàn quyền Odoo admin — kiểm soát truy cập qua backend
@@ -231,12 +233,15 @@ User login thành công
 
 ### 6.3 Thanh toán
 
-- **Phương thức**: Tiền mặt, Chuyển khoản, VNPay, MoMo, VietQR Payment, Thẻ tín dụng, COD
+- **Phương thức giai đoạn 1** (BE hỗ trợ): 
+  - Tiền mặt (`cash`)
+  - Chuyển khoản / Thẻ tín dụng (`transfer`/`credit_card` — journal map: bank)
+  - "Thanh toán khác (sắp có)" — UI hiển thị option disabled làm placeholder cho VNPay/MoMo/VietQR Payment/COD
 - **Mô hình hiện tại**: Ghi nhận **thủ công** — thu ngân xác nhận sau khi khách thanh toán
 - **Mô hình planned**: VNPay, MoMo, VietQR Payment tích hợp API — xem mục 6.6, 6.7, 6.8
 - **Đặc điểm**: Hỗ trợ nhiều phương thức trong 1 đơn
 - **Đặt cọc**: Hỗ trợ — nhân viên nhập tự do, tìm đơn theo thông tin KH khi thu phần còn lại
-- **COD**: Xem mục 6.5
+- **COD**: Xem mục 6.5 (planned)
 
 ### 6.4 Hoá đơn điện tử — Misa *(Planned)*
 
@@ -302,7 +307,7 @@ vj-mobile-pos/
 │   ├── app/
 │   │   ├── api/          # routes: auth, orders, products, inventory, payment, templates, print
 │   │   ├── core/         # config, security (JWT), cache (TTLCache)
-│   │   ├── odoo/         # XML-RPC client wrapper + model helpers
+│   │   ├── odoo/         # JSON-RPC client wrapper + model helpers
 │   │   ├── external/     # MST (VietQR), Misa eInvoice (planned), COD Carrier (planned)
 │   │   └── print/        # WeasyPrint + Jinja2: render template → PDF
 │   ├── .env.dev          # Biến môi trường DEV (không commit)

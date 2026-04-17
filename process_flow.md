@@ -1,8 +1,8 @@
 # VJ Mobile POS — Process Flow
 
 > Trạng thái: Draft  
-> Cập nhật: 2026-04-15  
-> Phiên bản: 0.7
+> Cập nhật: 2026-04-17  
+> Phiên bản: 0.8
 
 Chỉ bao gồm các luồng đã xác định đủ nội dung.  
 Các câu hỏi còn mở xem tại [open_questions.md](open_questions.md).
@@ -124,19 +124,10 @@ flowchart TD
     D --> E
     E --> F{Phương thức}:::decision
     F -- Tiền mặt --> G[Nhập số tiền nhận\nTính tiền thừa]:::user
-    F -- Chuyển khoản --> H[Ghi nhận số tiền\nvà ngân hàng]:::user
-    F -- VNPay / MoMo --> I[Xác nhận thủ công\nsau khi khách thanh toán]:::user
-    F -- Thẻ tín dụng --> J[Xác nhận thủ công\nsau khi máy POS xác nhận]:::user
-    F -- COD --> COD1[Chọn đơn vị vận chuyển\nvà ghi nhận mã vận đơn]:::user
-    COD1 --> COD2[Hệ thống ghi nhận\nthu hộ COD — chờ xác nhận]:::system
-    COD2 --> COD3{Đơn vị vận chuyển\nxác nhận đã thu?}:::decision
-    COD3 -- Chưa --> COD4([Đơn ở trạng thái\nchờ thu hộ COD]):::warning
-    COD3 -- Đã thu --> COD5[Ghi nhận số tiền\nthực thu từ đơn vị vận chuyển]:::user
-    COD5 --> K
+    F -- Chuyển khoản / Thẻ tín dụng --> H[Ghi nhận số tiền\n+ tham chiếu giao dịch]:::user
+    F -- Thanh toán khác (sắp có) --> DISABLED[Option disabled — VNPay/MoMo/VietQR/COD\nchờ tích hợp]:::warning
     G --> K{Còn thiếu?\nThêm phương thức?}:::decision
     H --> K
-    I --> K
-    J --> K
     K -- Thêm phương thức --> E
     K -- Hoàn tất --> L[Tạo account.move draft\ntrên Odoo]:::system
     L --> M[Tạo account.payment\nlinked to invoice]:::system
@@ -149,7 +140,7 @@ flowchart TD
 - Hỗ trợ đặt cọc nhiều lần (OQ-O01)
 - Đơn cọc không hết hạn (OQ-O02)
 - Nhiều phương thức trong 1 đơn (OQ-C03)
-- **COD**: Đơn vị vận chuyển thu hộ tiền mặt — đơn ở trạng thái *chờ thu hộ* cho đến khi xác nhận thực thu; mã vận đơn bắt buộc
+- **Phương thức** (giai đoạn 1): 3 option — Tiền mặt, Chuyển khoản/Thẻ, Thanh toán khác (disabled). VNPay/MoMo/VietQR Payment/COD chờ tích hợp API trong sprint sau.
 
 ---
 
@@ -293,7 +284,7 @@ sequenceDiagram
     participant FE as Frontend (Vue)
     participant BE as Backend (FastAPI)
     participant DB as PostgreSQL
-    participant Odoo as Odoo (XML-RPC)
+    participant Odoo as Odoo (JSON-RPC)
 
     rect rgb(219, 234, 254)
         Note over User,FE: Thao tác người dùng
@@ -309,7 +300,7 @@ sequenceDiagram
             BE-->>FE: 401 ACCOUNT_DISABLED
         end
         DB-->>BE: User record + hr_employee_id + roles + locations
-        BE->>Odoo: XML-RPC hr.employee.search_read(hr_employee_id)
+        BE->>Odoo: JSON-RPC hr.employee.search_read(hr_employee_id)
         Odoo-->>BE: Tên, email, SĐT, phòng ban, chức danh
         BE->>DB: Lưu refresh token (bảng refresh_tokens)
         BE-->>FE: Access token + Refresh token + user info + employee info
@@ -343,6 +334,7 @@ sequenceDiagram
 - Khóa tài khoản sau 5 lần sai → ADMIN mở thủ công (OQ-M04, OQ-W03)
 - Idle timeout 5 phút → tự đăng xuất (OQ-M03)
 - Pre-fetch chạy song song ngay sau login — 4 Odoo calls đồng thời → giảm tải lần đầu dùng SP/tồn kho
+- Prefetch timeout 60s — nếu vẫn fail sau 60s, hiển thị lỗi yêu cầu user liên hệ ADMIN.
 - FE hiển thị loading cho đến khi `prefetch_ready: true` → không cho vào màn hình chính sớm khi cache chưa warm
 
 ---
@@ -514,7 +506,7 @@ sequenceDiagram
         alt Cache hit (TTL < 5 phút)
             Note over BE: Trả từ TTLCache in-memory
         else Cache miss
-            BE->>Odoo: XML-RPC search_read stock.quant
+            BE->>Odoo: JSON-RPC search_read stock.quant
             Odoo-->>BE: Dữ liệu tồn kho theo location
             Note over BE: Lưu vào TTLCache (5 phút)
         end
