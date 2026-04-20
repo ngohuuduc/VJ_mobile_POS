@@ -2,7 +2,7 @@
 
 > Trạng thái: Draft  
 > Cập nhật: 2026-04-17  
-> Phiên bản: 0.8
+> Phiên bản: 0.9
 
 Chỉ bao gồm các luồng đã xác định đủ nội dung.  
 Các câu hỏi còn mở xem tại [open_questions.md](open_questions.md).
@@ -33,6 +33,7 @@ Các câu hỏi còn mở xem tại [open_questions.md](open_questions.md).
 | A4 | Quản lý Backorder | Theo dõi, validate, hủy backorder |
 | A5 | Hủy đơn hàng | Hủy theo trạng thái + phân quyền |
 | A6 | Xuất hoá đơn điện tử | Tạo nháp trên Misa + thông báo kế toán thuế |
+| A7 | Tạo / Cập nhật Khách hàng | Tìm / tạo / sửa `res.partner`, auto-fill MST qua VietQR, sync Odoo ngay |
 
 ### Phần B — Technical Flows (Kỹ thuật)
 
@@ -269,6 +270,73 @@ flowchart TD
 - Nội dung hoá đơn dựa trên phiếu bán hàng (A8 / B7): danh sách sản phẩm, số lượng, đơn giá, tổng tiền
 - Email thông báo gửi đến địa chỉ kế toán thuế được cấu hình trong hệ thống
 - Nếu Misa API thất bại: audit log lưu lại để xử lý thủ công, không ảnh hưởng đến đơn hàng
+
+---
+
+## A7. Luồng Tạo / Cập nhật Khách hàng
+
+Luồng quản lý `res.partner` — cả POS User và ADMIN đều được phép **tạo** và **cập nhật** (per OQ-J04, OQ-AE03). Entry points: từ màn Tạo đơn hàng (bấm "Chọn khách hàng"), hoặc từ Dialog Thanh toán (nếu chưa có KH), hoặc từ admin CRUD trong tương lai.
+
+```mermaid
+flowchart TD
+    classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
+    classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
+    classDef accountant fill:#CCFBF1,stroke:#0D9488,color:#134E4A
+    classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
+    classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
+    classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
+
+    START([Entry: bấm Chọn KH / Sửa KH]):::terminal --> SEARCH[Mở dialog tìm KH\nnhập tên / SĐT / email / MST]:::user
+    SEARCH --> Q[GET /api/v1/customers/search?q=]:::system
+    Q --> HAS{Có kết quả?}:::decision
+    HAS -- Có --> LIST[Hiển thị danh sách\n3 ký tự đầu + debounce 300ms]:::system
+    LIST --> PICK{Hành động}:::decision
+    PICK -- Chọn KH có sẵn --> SELECT[Đính kèm KH vào cart/đơn]:::system
+    PICK -- Sửa KH --> EDIT[Mở dialog sửa với thông tin hiện tại]:::user
+    PICK -- Tạo mới --> NEW
+    HAS -- Không --> NEW[Mở dialog tạo KH mới]:::user
+
+    NEW --> FORM[Form: tên*, SĐT*, email*, MST, địa chỉ]:::user
+    EDIT --> FORM
+    FORM --> MST{Có nhập MST?}:::decision
+    MST -- Có --> VQ[GET /api/v1/customers/mst/tax_code\n→ VietQR API lookup]:::system
+    VQ --> VQR{VietQR trả kết quả?}:::decision
+    VQR -- Có --> AUTOFILL[Auto-fill tên DN, địa chỉ\nUser có thể chỉnh sửa]:::system
+    VQR -- Không --> WARN1([Hiển thị cảnh báo: MST không hợp lệ\nvẫn cho phép lưu nếu user xác nhận]):::warning
+    AUTOFILL --> VAL
+    WARN1 --> VAL
+    MST -- Không --> VAL[Validate FE:\n- SĐT auto-format 0901 234 567\n- Email format\n- Tên ≥ 2 ký tự]:::system
+
+    VAL --> VOK{Valid?}:::decision
+    VOK -- Không --> FORM
+    VOK -- Có --> CONFIRM{Dialog xác nhận\nLưu / Cập nhật KH?}:::decision
+    CONFIRM -- Hủy --> END1([Kết thúc — không lưu]):::terminal
+    CONFIRM -- OK --> API{Tạo hay Sửa?}:::decision
+
+    API -- Tạo mới --> POST[POST /api/v1/customers\n→ Odoo res.partner.create\nsync ngay lập tức]:::system
+    API -- Sửa --> PUT[PUT /api/v1/customers/id\n→ Odoo res.partner.write\nsync ngay lập tức]:::system
+
+    POST --> RES{Odoo phản hồi?}:::decision
+    PUT --> RES
+    RES -- Thành công --> OK[Cập nhật customer_cache\n→ đóng dialog\n→ đính vào cart/đơn nếu có]:::system
+    RES -- Lỗi --> ERR([Thông báo lỗi\naudit_log ghi chi tiết\nKhông ảnh hưởng đơn hàng]):::warning
+    OK --> SELECT
+    SELECT --> DONE([Hoàn tất]):::terminal
+    ERR --> FORM
+```
+
+**Ghi chú:**
+
+- **Quyền**: cả POS User và ADMIN đều được PUT/POST — per OQ-J04, OQ-AE03 ("Đã sửa trong backend").
+- **Bắt buộc** (OQ-J02): `tên`, `số điện thoại`, `email`. MST + địa chỉ **tùy chọn**.
+- **Tìm kiếm** (OQ-J03): tên, SĐT, email, MST — BE handle logic.
+- **SĐT auto-format** (OQ-AF02): khi gõ `0901234567` → hiển thị `0901 234 567`. Regex VN: `^(0|\+84)(\d{9,10})$`.
+- **MST VietQR** (OQ-X01, B6): khi nhập MST và blur/submit → call VietQR API → auto-fill tên DN + địa chỉ. User có thể chỉnh sửa sau auto-fill.
+- **Sync ngay** (OQ-X01): backend gọi `res.partner.create` / `write` qua JSON-RPC ngay khi bấm Lưu — không đợi batch. Cache `customer_cache` invalidate cho user hiện tại.
+- **Confirm dialog** (OQ-Q01): xác nhận trước khi tạo/lưu/cập nhật.
+- **Đính kèm vào cart**: nếu entry từ màn Tạo đơn (`/orders/new`), sau khi lưu thành công → `cart.setCustomer(...)` → đóng dialog → quay lại màn chính.
+- **Error handling**: Odoo fail → giữ dialog mở, show error, audit_log ghi lại; user có thể retry hoặc hủy.
+- **Không cho xóa KH**: out of scope giai đoạn này (chỉnh sửa trên Odoo nếu cần).
 
 ---
 

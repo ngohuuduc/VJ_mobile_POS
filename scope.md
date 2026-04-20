@@ -2,7 +2,7 @@
 
 > Trạng thái: Draft  
 > Cập nhật: 2026-04-17  
-> Phiên bản: 0.6
+> Phiên bản: 0.7
 
 ---
 
@@ -73,18 +73,26 @@ Giai đoạn phát triển ban đầu, hệ thống có **2 role**:
 
 ## 4. Kiến trúc hệ thống
 
+> **Topology** (per OQ-AH01/AH13/AH14): 1 Docker host, 2 container riêng (FE + BE), **host NGINX** (ngoài Docker) làm reverse proxy + SSL termination. BE **tuyệt đối không expose ra Internet** — chỉ bind `127.0.0.1` để host NGINX proxy. Single domain + path routing → FE gọi API bằng **relative URL** `/api/v1/...` (same-origin, không cần CORS, không cần runtime config injection). File deploy lưu trong [`.deploy/`](../.deploy/).
+
 ```mermaid
 graph TD
-    Browser["🌐 Browser\nVue 3 + Quasar v2 SPA\niOS / Android / Desktop"]
+    Browser["🌐 Browser\nVue 3 + Quasar v2 SPA\niPad / Desktop"]
 
-    subgraph Server["🐳 Docker Compose — Server độc lập"]
-        subgraph FrontendLayer["🎨 Frontend"]
-            NGINX["🔀 NGINX :443\nSSL Termination\n/ → Vue static build\n/api/* → proxy FastAPI\n/media/* → ảnh sản phẩm"]
-        end
-        subgraph BackendLayer["⚙️ Backend"]
-            FastAPI["⚡ FastAPI :8000\n+ TTLCache + WeasyPrint"]
-            PG["🗄️ PostgreSQL\nusers / logs / drafts / tokens"]
-            ImgStore["📁 Local Storage\nẢnh sản phẩm"]
+    subgraph Host["🖥️ Docker Host"]
+        HostNginx["🔀 Host NGINX :443\nLet's Encrypt SSL termination\n/         → frontend:80\n/api/*    → backend:8000\n/media/*  → backend:8000"]
+
+        subgraph Docker["🐳 Docker Compose (.deploy/docker-compose.yml)"]
+            subgraph FEContainer["📦 frontend container (127.0.0.1:XXXX)"]
+                FENginx["⚡ Nginx :80\nserve dist/spa/\nSPA fallback"]
+            end
+            subgraph BEContainer["📦 backend container (127.0.0.1:8000) — 🔒 LOCAL ONLY"]
+                FastAPI["⚡ FastAPI :8000\n+ TTLCache + WeasyPrint"]
+                ImgStore["📁 Local Storage\nẢnh sản phẩm"]
+            end
+            subgraph PGContainer["📦 postgres container (internal only)"]
+                PG["🗄️ PostgreSQL\nusers / logs / drafts / tokens"]
+            end
         end
     end
 
@@ -95,25 +103,26 @@ graph TD
     end
 
     subgraph Planned["🔮 Planned Integrations"]
-        Misa["🧾 Misa eInvoice API\nHoá đơn điện tử"]
-        Carrier["🚚 Đơn vị vận chuyển API\nGiao hàng / COD"]
-        VNPayAPI["💳 VNPay API\nThanh toán online"]
-        MoMoAPI["📱 MoMo API\nVí điện tử"]
-        VietQRPay["🏦 VietQR Payment\nChuyển khoản QR"]
+        Misa["🧾 Misa eInvoice API"]
+        Carrier["🚚 Đơn vị vận chuyển"]
+        VNPayAPI["💳 VNPay"]
+        MoMoAPI["📱 MoMo"]
+        VietQRPay["🏦 VietQR Payment"]
     end
 
-    Browser -->|"HTTPS"| NGINX
-    NGINX -->|"proxy_pass /api/* (internal)"| FastAPI
-    FastAPI <-->|SQL| PG
+    Browser -->|"HTTPS :443"| HostNginx
+    HostNginx -->|"HTTP → 127.0.0.1:XXXX"| FENginx
+    HostNginx -->|"HTTP → 127.0.0.1:8000"| FastAPI
+    FastAPI <-->|"internal docker net"| PG
     FastAPI <-->|read / write| ImgStore
     FastAPI -->|JSON-RPC| Odoo
     FastAPI -->|HTTPS REST| VietQR
     FastAPI -->|SMTP| SES
-    FastAPI -.->|"HTTPS REST — Planned"| Misa
-    FastAPI -.->|"HTTPS REST — Planned"| Carrier
-    FastAPI -.->|"HTTPS REST — Planned"| VNPayAPI
-    FastAPI -.->|"HTTPS REST — Planned"| MoMoAPI
-    FastAPI -.->|"HTTPS REST — Planned"| VietQRPay
+    FastAPI -.->|"Planned"| Misa
+    FastAPI -.->|"Planned"| Carrier
+    FastAPI -.->|"Planned"| VNPayAPI
+    FastAPI -.->|"Planned"| MoMoAPI
+    FastAPI -.->|"Planned"| VietQRPay
 ```
 
 ### 4.1 Tech Stack
@@ -126,8 +135,9 @@ graph TD
 | Cache | `cachetools.TTLCache` (in-process) | Hot data: sản phẩm, tồn kho, MST, pricelist |
 | Database | PostgreSQL | Users, audit log, draft orders, refresh tokens, print templates, config |
 | Auth | JWT (access + refresh token) | Stateless |
-| Reverse Proxy | NGINX | Single entry point :443 — SSL termination, serve Vue static build (`/`), proxy_pass API calls (`/api/*`) tới FastAPI nội bộ, serve ảnh sản phẩm (`/media/*`) |
-| Container | Docker Compose | Server riêng với Odoo |
+| Reverse Proxy | **Host NGINX** (ngoài Docker) | Let's Encrypt SSL đã cài sẵn trên host. Single domain + path routing: `/` → frontend container, `/api/*` → backend container (`127.0.0.1:8000` only). BE **tuyệt đối không expose** Internet. FE gọi API bằng relative URL (same-origin, không CORS). Config mẫu: [`.deploy/nginx.host.conf.example`](../.deploy/nginx.host.conf.example) |
+| Container | Docker Compose (`.deploy/docker-compose.yml`) | 1 host duy nhất, 2 container (frontend + backend) + postgres. Frontend container: Nginx alpine serve `dist/spa/`. Backend + Postgres container: không expose port ngoài loopback. |
+| FE ↔ BE communication | Relative URL `/api/v1/...` | Same-origin qua host NGINX, **không cần runtime config injection**. Không CORS preflight. |
 | Odoo connector | httpx async — JSON-RPC | Tránh control-byte bug của XML-RPC. Singleton + semaphore 8 RPC đồng thời, timeout 30s |
 | PDF generation | `WeasyPrint` + `Jinja2` (Python, backend) | FastAPI render HTML/CSS template → PDF binary |
 | Ảnh sản phẩm | Local storage (server) | ADMIN upload trong app, backend resize + crop → thumbnail. Max 5MB |
@@ -299,10 +309,15 @@ Backend dùng **JSON-RPC** (qua `httpx` async) để gọi các method trên, kh
 
 ---
 
-## 7. Cấu trúc thư mục dự kiến
+## 7. Cấu trúc thư mục
 
 ```
-vj-mobile-pos/
+VJ_POS_Platform/
+├── .deploy/                        # Tất cả file phục vụ deploy trên Docker host
+│   ├── docker-compose.yml          # Orchestrate FE + BE + Postgres (staging/prod)
+│   ├── nginx.host.conf.example     # Mẫu config cho HOST NGINX (reverse proxy + SSL)
+│   ├── .env.example                # Env mẫu cho deploy (APP_ENV, domain, image tag...)
+│   └── README.md                   # Hướng dẫn deploy
 ├── backend/
 │   ├── app/
 │   │   ├── api/          # routes: auth, orders, products, inventory, payment, templates, print
@@ -310,39 +325,58 @@ vj-mobile-pos/
 │   │   ├── odoo/         # JSON-RPC client wrapper + model helpers
 │   │   ├── external/     # MST (VietQR), Misa eInvoice (planned), COD Carrier (planned)
 │   │   └── print/        # WeasyPrint + Jinja2: render template → PDF
-│   ├── .env.dev          # Biến môi trường DEV (không commit)
-│   ├── .env.prod         # Biến môi trường PRD (không commit)
-│   ├── .env.example      # Template — commit vào repo
-│   └── requirements.txt
+│   ├── Dockerfile
+│   ├── docker-compose.dev.yml   # Postgres dev local
+│   ├── .env                     # Biến môi trường runtime (mount từ host, không commit)
+│   ├── .env.example             # Template — commit vào repo
+│   └── pyproject.toml
 ├── frontend/
-│   └── (Vue 3 + Quasar v2 project)
-├── nginx/
-│   ├── nginx.dev.conf    # DEV: HTTP, no SSL, CORS mở
-│   └── nginx.prod.conf   # PRD: HTTPS, SSL cert, security headers
-├── docker-compose.yml         # Base — shared config
-├── docker-compose.dev.yml     # Override DEV: hot reload, port expose, no SSL
-├── docker-compose.prod.yml    # Override PRD: restart policy, log rotation, SSL
-└── docs/
-    ├── scope.md
-    ├── process_flow.md
+│   ├── src/                     # Vue 3 + Quasar v2 SPA
+│   ├── Dockerfile               # Multi-stage: node:20 build → nginx:alpine serve
+│   ├── nginx.conf               # Nginx trong container — SPA fallback, gzip, healthcheck
+│   ├── .env                     # Biến môi trường build-time (mount từ host, không commit)
+│   ├── .env.example             # Template
+│   ├── quasar.config.js
+│   └── package.json
+├── .github/
+│   └── workflows/
+│       ├── deploy-fe.yml        # Build + push registry.parainsight.com/vj-pos-frontend:latest
+│       └── deploy-be.yml        # Build + push registry.parainsight.com/vj-pos-backend:latest
+├── docs/
+│   ├── scope.md
+│   └── process_flow.md
+└── planning/
+    ├── frontend_design.md
+    ├── api_contract.md
     ├── open_questions.md
     └── workload_estimate.md
 ```
 
-### 7.1 Khác biệt DEV vs PRD
+### 7.1 Khác biệt DEV vs Staging/PRD
 
-| Thành phần | DEV | PRD |
+| Thành phần | DEV (localhost) | Staging / PRD (Docker host) |
 |---|---|---|
-| FastAPI server | `uvicorn --reload` (1 worker) | `gunicorn` + `uvicorn` workers (multi-process) |
-| NGINX | HTTP `:80`, không SSL, CORS mở | HTTPS `:443`, SSL cert, strict security headers |
-| PostgreSQL | Credentials đơn giản, expose port ra host | Credentials mạnh, **không expose port** ra ngoài |
-| Logging | `stdout` (console) | File `*.log` + rotation, chuẩn bị stream Loki |
-| Debug / Reload | `DEBUG=true`, hot reload bật | `DEBUG=false`, hot reload tắt |
-| CORS | Cho phép `*` hoặc `localhost` | Chỉ cho phép domain production |
-| SSL | Không (hoặc self-signed) | Certificate thật (Let's Encrypt hoặc cung cấp sẵn) |
+| Orchestration | `backend/docker-compose.dev.yml` chỉ Postgres + `pnpm dev` FE + `uvicorn --reload` BE local | `.deploy/docker-compose.yml` — FE + BE + Postgres (container) |
+| Host NGINX | Không (FE Vite dev :9000 + BE uvicorn :8000 trực tiếp) | **Có** — ngoài Docker, Let's Encrypt SSL, reverse proxy |
+| FastAPI server | `uvicorn --reload` (1 worker) | `gunicorn` + `uvicorn` workers |
+| FE bind | Vite :9000 trên host | Container Nginx :80, bind `127.0.0.1:XXXX` trên host |
+| BE bind | `0.0.0.0:8000` (local) | **`127.0.0.1:8000`** — TUYỆT ĐỐI không expose Internet |
+| Postgres | Compose expose `:5432` ra localhost | Internal docker network only |
+| Logging | `stdout` (console) | File `*.log` + rotation → Loki qua Grafana Alloy (planned) |
+| Debug / Reload | `DEBUG=true`, hot reload bật | `DEBUG=false`, tối ưu bundle |
+| CORS | `localhost:9000` | **Không cần CORS** (same-origin qua host NGINX) |
+| SSL | Không | Let's Encrypt trên host NGINX |
 | Odoo endpoint | Dev/staging Odoo | Production Odoo |
-| Secret keys | Giá trị test | Secrets mạnh, quản lý riêng |
+| Docker registry | N/A | `registry.parainsight.com` (tag `latest`) |
+| Deploy | `pnpm dev` / `uvicorn` | CI push image → host `docker compose pull && up -d` |
 | Docker restart | Không cần | `restart: unless-stopped` |
+
+### 7.2 Deploy flow tóm tắt
+
+1. **CI (GitHub Actions)**: merge `main` → build 2 Docker image → push `registry.parainsight.com/vj-pos-frontend:latest` + `vj-pos-backend:latest`.
+2. **Host server**: `cd .deploy && docker compose pull && docker compose up -d`.
+3. **Host NGINX**: config `.deploy/nginx.host.conf.example` → `/` proxy `127.0.0.1:XXXX` (FE), `/api/*` proxy `127.0.0.1:8000` (BE). Let's Encrypt auto-renew.
+4. **Staging**: `https://vjsdev.southeastasia.cloudapp.azure.com` → cùng flow với domain staging.
 
 ---
 
