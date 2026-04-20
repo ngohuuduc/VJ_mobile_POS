@@ -73,24 +73,25 @@ Giai đoạn phát triển ban đầu, hệ thống có **2 role**:
 
 ## 4. Kiến trúc hệ thống
 
-> **Topology** (per OQ-AH01/AH13/AH14): 1 Docker host, 2 container riêng (FE + BE), **host NGINX** (ngoài Docker) làm reverse proxy + SSL termination. BE **tuyệt đối không expose ra Internet** — chỉ bind `127.0.0.1` để host NGINX proxy. Single domain + path routing → FE gọi API bằng **relative URL** `/api/v1/...` (same-origin, không cần CORS, không cần runtime config injection). File deploy lưu trong [`.deploy/`](../.deploy/).
+> **Topology** (per OQ-AH01/AH13/AH14 + clarification): 1 Docker host. **Host NGINX** (ngoài Docker) làm SSL termination + serve FE static **trực tiếp** từ filesystem + proxy `/api/*` tới BE container. BE **tuyệt đối không expose ra Internet** — bind `127.0.0.1:18000`. FE container là **one-shot sync**: khởi động → copy `dist/spa/` sang bind mount `/var/www/vj-pos/` → exit (thay vai trò Vercel). Single-domain path routing → FE gọi API bằng **relative URL** `/api/v1/...` (same-origin, không CORS). File deploy: [`.deploy/`](../.deploy/).
 
 ```mermaid
 graph TD
     Browser["🌐 Browser\nVue 3 + Quasar v2 SPA\niPad / Desktop"]
 
     subgraph Host["🖥️ Docker Host"]
-        HostNginx["🔀 Host NGINX :443\nLet's Encrypt SSL termination\n/         → frontend:80\n/api/*    → backend:8000\n/media/*  → backend:8000"]
+        HostNginx["🔀 Host NGINX :443 (ngoài Docker)\nLet's Encrypt SSL termination\n/         → serve TRỰC TIẾP /var/www/vj-pos/\n/api/*    → proxy 127.0.0.1:18000\n/media/*  → proxy 127.0.0.1:18000"]
+        HostFS["📁 /var/www/vj-pos/\nindex.html + assets/"]
 
         subgraph Docker["🐳 Docker Compose (.deploy/docker-compose.yml)"]
-            subgraph FEContainer["📦 frontend container (127.0.0.1:XXXX)"]
-                FENginx["⚡ Nginx :80\nserve dist/spa/\nSPA fallback"]
+            subgraph FEContainer["📦 frontend container (ONE-SHOT)"]
+                FEsync["🔄 cp /artifacts/ → /dist\n(bind mount → /var/www/vj-pos/)\nrồi exit 0"]
             end
-            subgraph BEContainer["📦 backend container (127.0.0.1:8000) — 🔒 LOCAL ONLY"]
+            subgraph BEContainer["📦 backend container (127.0.0.1:18000) — 🔒 LOCAL ONLY"]
                 FastAPI["⚡ FastAPI :8000\n+ TTLCache + WeasyPrint"]
-                ImgStore["📁 Local Storage\nẢnh sản phẩm"]
+                ImgStore["📁 Local Storage\nẢnh sản phẩm (OQ-V01)"]
             end
-            subgraph PGContainer["📦 postgres container (internal only)"]
+            subgraph PGContainer["📦 postgres container (internal docker net)"]
                 PG["🗄️ PostgreSQL\nusers / logs / drafts / tokens"]
             end
         end
@@ -111,8 +112,9 @@ graph TD
     end
 
     Browser -->|"HTTPS :443"| HostNginx
-    HostNginx -->|"HTTP → 127.0.0.1:XXXX"| FENginx
-    HostNginx -->|"HTTP → 127.0.0.1:8000"| FastAPI
+    HostNginx -->|"read static"| HostFS
+    FEsync -.->|"one-shot copy"| HostFS
+    HostNginx -->|"HTTP → 127.0.0.1:18000"| FastAPI
     FastAPI <-->|"internal docker net"| PG
     FastAPI <-->|read / write| ImgStore
     FastAPI -->|JSON-RPC| Odoo
@@ -135,8 +137,8 @@ graph TD
 | Cache | `cachetools.TTLCache` (in-process) | Hot data: sản phẩm, tồn kho, MST, pricelist |
 | Database | PostgreSQL | Users, audit log, draft orders, refresh tokens, print templates, config |
 | Auth | JWT (access + refresh token) | Stateless |
-| Reverse Proxy | **Host NGINX** (ngoài Docker) | Let's Encrypt SSL đã cài sẵn trên host. Single domain + path routing: `/` → frontend container, `/api/*` → backend container (`127.0.0.1:8000` only). BE **tuyệt đối không expose** Internet. FE gọi API bằng relative URL (same-origin, không CORS). Config mẫu: [`.deploy/nginx.host.conf.example`](../.deploy/nginx.host.conf.example) |
-| Container | Docker Compose (`.deploy/docker-compose.yml`) | 1 host duy nhất, 2 container (frontend + backend) + postgres. Frontend container: Nginx alpine serve `dist/spa/`. Backend + Postgres container: không expose port ngoài loopback. |
+| Reverse Proxy | **Host NGINX** (ngoài Docker) | Let's Encrypt SSL đã cài sẵn. Serve FE static **trực tiếp** từ `/var/www/vj-pos/` + proxy `/api/*` → BE container `127.0.0.1:18000`. BE **tuyệt đối không expose** Internet. FE gọi API bằng relative URL (same-origin, không CORS). Config mẫu: [`.deploy/nginx.host.conf.example`](../.deploy/nginx.host.conf.example) |
+| Container | Docker Compose (`.deploy/docker-compose.yml`) | 1 host: **FE one-shot sync** (busybox, copy `dist/spa/` → bind mount `/var/www/vj-pos/` rồi exit — thay vai trò Vercel) + **BE long-running** (FastAPI) + **Postgres** (internal docker net). |
 | FE ↔ BE communication | Relative URL `/api/v1/...` | Same-origin qua host NGINX, **không cần runtime config injection**. Không CORS preflight. |
 | Odoo connector | httpx async — JSON-RPC | Tránh control-byte bug của XML-RPC. Singleton + semaphore 8 RPC đồng thời, timeout 30s |
 | PDF generation | `WeasyPrint` + `Jinja2` (Python, backend) | FastAPI render HTML/CSS template → PDF binary |
@@ -332,9 +334,9 @@ VJ_POS_Platform/
 │   └── pyproject.toml
 ├── frontend/
 │   ├── src/                     # Vue 3 + Quasar v2 SPA
-│   ├── Dockerfile               # Multi-stage: node:20 build → nginx:alpine serve
-│   ├── nginx.conf               # Nginx trong container — SPA fallback, gzip, healthcheck
-│   ├── .env                     # Biến môi trường build-time (mount từ host, không commit)
+│   ├── Dockerfile               # Multi-stage: node:20 build → busybox artifact delivery
+│   ├── .dockerignore
+│   ├── .env                     # Biến môi trường build-time (không commit)
 │   ├── .env.example             # Template
 │   ├── quasar.config.js
 │   └── package.json
