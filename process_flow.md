@@ -1,11 +1,24 @@
 # VJ Mobile POS — Process Flow
 
 > Trạng thái: Draft  
-> Cập nhật: 2026-04-17  
-> Phiên bản: 0.9
+> Cập nhật: 2026-04-22  
+> Phiên bản: 1.0 — Link to staging issue_log
 
 Chỉ bao gồm các luồng đã xác định đủ nội dung.  
-Các câu hỏi còn mở xem tại [open_questions.md](open_questions.md).
+Các câu hỏi còn mở xem tại [open_questions.md](../planning/open_questions.md).
+
+## Flow changes sau staging testing
+
+Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) cho chi tiết từng issue.
+
+| Flow | Thay đổi | Issue |
+|---|---|---|
+| A1 — Tạo đơn | Confirm → auto create + post invoice → auto lock (state=done). Cho phép xác nhận với partial/zero payment (đặt cọc). | #12, #30, #52 |
+| A2 — Thanh toán | Record qua wizard `account.payment.register` → auto reconcile với invoice (canonical Odoo flow). Cho phép thu thêm nhiều lần qua OrderDetailPage. | #16, #28, #39 |
+| A5 — Hủy đơn | **REMOVED khỏi POS UI.** Toàn bộ cancellation đi Odoo sale.order → Cancel button. | #51 |
+| A6 — Đổi location | Re-fetch products + inventory khi LocationBadge đổi location. Warehouse auto-resolve từ location. | #1, #2, #38 |
+| A7 — Tạo KH | Form thêm DOB; 3 field (name/phone/email) bắt buộc; MST auto-fill qua VietQR lookup. | #3, #48, #49 |
+| Commission | Write `sale.order.commission_employee = pos_user.hr_employee_id` khi tạo đơn. | #9 |
 
 ---
 

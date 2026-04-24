@@ -1,8 +1,22 @@
 # VJ Mobile POS — Scope & Architecture Document
 
 > Trạng thái: Draft  
-> Cập nhật: 2026-04-17  
-> Phiên bản: 0.7
+> Cập nhật: 2026-04-22  
+> Phiên bản: 0.8 — Link to staging issue_log
+
+## Rule changes sau staging testing
+
+Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) cho chi tiết từng issue.
+
+| Rule | Thay đổi | Issue |
+|---|---|---|
+| Order state | Map 1:1 với Odoo 5 states: `quotation / quotation_sent / sale_order / locked / cancelled` (không collapse sent→draft / done→confirmed) | #24 |
+| Auto-invoice | Sau confirm → tự tạo + post `account.move` (customer invoice) qua wizard `sale.advance.payment.inv`. Configurable `ODOO_AUTO_CREATE_INVOICE`, `ODOO_AUTO_POST_INVOICE`. | #12 |
+| Auto-lock | Sau invoice → `sale.order.action_done` → state=done. Configurable `ODOO_AUTO_LOCK_ORDER`. | #30 |
+| Cancel | POS UI **KHÔNG có cancel action** — đi Odoo sale.order. BE endpoint giữ cho admin tooling. | #51 |
+| Partial payment | Cho phép confirm đơn với partial/zero payment (đặt cọc); thu thêm sau. | #52 |
+| Commission | `sale.order.commission_employee` (Many2one hr.employee) — configurable field name. | #9 |
+| Serial on line | `sale.order.line.serial_no` (Many2one stock.production.lot) + description embed fallback. | #33, #36, #40 |
 
 ---
 
