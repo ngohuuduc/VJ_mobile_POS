@@ -15,8 +15,10 @@ Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) ch
 | Auto-lock | Sau invoice → `sale.order.action_done` → state=done. Configurable `ODOO_AUTO_LOCK_ORDER`. | #30 |
 | Cancel | POS UI **KHÔNG có cancel action** — đi Odoo sale.order. BE endpoint giữ cho admin tooling. | #51 |
 | Partial payment | Cho phép confirm đơn với partial/zero payment (đặt cọc); thu thêm sau. | #52 |
-| Commission | `sale.order.commission_employee` (Many2one hr.employee) — configurable field name. | #9 |
+| Customer required on confirm | POST `/orders` với `confirm=true` mà thiếu `customer_id` → BE reject `400 CUSTOMER_REQUIRED`. Trước đó BE âm thầm fallback `ODOO_DEFAULT_PARTNER_ID=1` → mọi đơn idle/load-draft mất customer rơi vào "Hệ Thống VJS". `confirm=false` (draft mode) vẫn cho fallback. Mở rộng rule cũ "KH bắt buộc trước thanh toán A2" sang cả bước confirm A1. | #102 |
+| Commission | `sale.order.commission_employee` (Many2one hr.employee) — configurable field name. **Refactor đang chờ Odoo module (#104):** tách 2 field — (a) field mới (TBD) auto-write `cashier = pos_user.hr_employee_id`, (b) `commission_employee` cho cashier pick từ dropdown `hr.employee`. Config: pre-staged `ODOO_CASHIER_EMPLOYEE_FIELD: str = ""` (empty default = giữ behavior #9 cũ). | #9, #104 |
 | Serial on line | `sale.order.line.serial_no` (Many2one stock.production.lot) + description embed fallback. | #33, #36, #40 |
+| Invoice journal per warehouse | **Pending Odoo module (#103):** custom field `stock.warehouse.sale_journal_id` → POS đọc warehouse của SO, write `account.move.journal_id` trước `action_post`. Hiện tại Odoo fallback first sale journal (`11NPS - Bán Hàng`) cho mọi đơn — sai báo cáo doanh thu theo cửa hàng. Config: pre-staged `ODOO_WAREHOUSE_SALE_JOURNAL_FIELD: str = ""` (empty default = preserve current). | #103 |
 
 ---
 

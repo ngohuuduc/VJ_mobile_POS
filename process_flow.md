@@ -13,12 +13,13 @@ Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) ch
 
 | Flow | Thay đổi | Issue |
 |---|---|---|
-| A1 — Tạo đơn | Confirm → auto create + post invoice → auto lock (state=done). Cho phép xác nhận với partial/zero payment (đặt cọc). | #12, #30, #52 |
-| A2 — Thanh toán | Record qua wizard `account.payment.register` → auto reconcile với invoice (canonical Odoo flow). Cho phép thu thêm nhiều lần qua OrderDetailPage. | #16, #28, #39 |
+| A1 — Tạo đơn | Confirm → auto create + post invoice → auto lock (state=done). Cho phép xác nhận với partial/zero payment (đặt cọc). **3 lane song song sau bước B**: chọn KH / chọn NV hoa hồng / tìm SP. Bước E split 4 nhánh theo combo `serial × tồn kho`. | #12, #30, #52 |
+| A2 — Thanh toán | Record qua wizard `account.payment.register` → auto reconcile với invoice (canonical Odoo flow). Cho phép thu thêm nhiều lần qua OrderDetailPage. **Bắt buộc KH trước confirm** — BE reject `confirm=true` không có customer_id (400 CUSTOMER_REQUIRED). | #16, #28, #39, #102 |
 | A5 — Hủy đơn | **REMOVED khỏi POS UI.** Toàn bộ cancellation đi Odoo sale.order → Cancel button. | #51 |
 | A6 — Đổi location | Re-fetch products + inventory khi LocationBadge đổi location. Warehouse auto-resolve từ location. | #1, #2, #38 |
-| A7 — Tạo KH | Form thêm DOB; 3 field (name/phone/email) bắt buộc; MST auto-fill qua VietQR lookup. | #3, #48, #49 |
-| Commission | Write `sale.order.commission_employee = pos_user.hr_employee_id` khi tạo đơn. | #9 |
+| A7 — Tạo KH | Form thêm DOB; 3 field (name/phone/email) bắt buộc, email optional sau staging (#85); MST auto-fill qua VietQR lookup. | #3, #48, #49, #85 |
+| Commission | **Refactor in progress (#104)**: tách 2 field — (a) field mới (TBD) auto-write `cashier = pos_user.hr_employee_id`, (b) `commission_employee` cho user pick từ dropdown `hr.employee`. Đợi Odoo module ship field mới. | #9, #104 |
+| Invoice journal | **Pending Odoo module (#103)**: thêm `stock.warehouse.sale_journal_id` → POS đọc khi tạo invoice + write `account.move.journal_id` trước `action_post`. Hiện tại fallback default → mọi đơn vào "11NPS - Bán Hàng" (sai). | #103 |
 
 ---
 
@@ -83,7 +84,17 @@ flowchart TD
     classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
 
     A([Bắt đầu]):::terminal --> B[Warehouse tự động chọn\ntheo location của user]:::system
-    B --> C[Tìm kiếm sản phẩm\ntên / SKU / barcode / serial]:::user
+
+    %% Sau B, 3 lane chạy SONG SONG (cashier có thể đan xen tự do):
+    %%   - Lane KH:    Chọn/tạo khách hàng (optional ở A1, bắt buộc trước A2)
+    %%   - Lane Comm:  Chọn nhân viên hưởng hoa hồng (optional, per #104)
+    %%   - Lane SP:    Tìm + thêm sản phẩm (vòng lặp)
+    %% Cả 3 hội tụ tại I (review). Không có dependency thứ tự giữa các lane.
+
+    B --> CUS1[Lane KH: Chọn / Tạo khách hàng\noptional ở A1 — bắt buộc trước A2\nentry A7]:::user
+    B --> COMM1[Lane Comm: Chọn NV hưởng hoa hồng\noptional — dropdown hr.employee\n#104]:::user
+    B --> C[Lane SP: Tìm kiếm sản phẩm\ntên / SKU / barcode / serial]:::user
+
     C --> D[Thêm SP vào đơn]:::user
     D --> E{SP có serial?}:::decision
 
@@ -100,18 +111,26 @@ flowchart TD
     G1 --> H
     G2 --> H
     H -- Có --> C
-    H -- Không --> I[Xem lại đơn hàng\ngiá / số lượng]:::user
+    H -- Không --> I[Xem lại đơn hàng\ngiá / số lượng / KH / NV hoa hồng]:::user
+
+    %% 3 lane hội tụ tại I — KH lane + Comm lane đi thẳng vào I sau khi user thao tác xong
+    CUS1 -.merge.-> I
+    COMM1 -.merge.-> I
+
     I --> J{Hành động}:::decision
-    J -- Lưu nháp --> K[INSERT draft_orders\nexpires_at = now + 8h]:::system
+    J -- Lưu nháp --> K[INSERT draft_orders\nexpires_at = now + 8h\nsnapshot KH + NV hoa hồng]:::system
     K --> L([Đơn nháp lưu thành công]):::terminal
-    J -- Xác nhận --> M[sale.order.create\nsale.order.action_confirm]:::system
+    J -- Xác nhận --> M[sale.order.create\nsale.order.action_confirm\n+ write cashier auto, commission user-pick]:::system
     M --> N[Odoo tự tạo stock.picking\n+ backorder cho dòng đặt cọc]:::system
     N --> O([Tiếp theo: Luồng A3 & A2]):::terminal
     J -- Hủy --> P([Kết thúc]):::terminal
 ```
 
 **Ghi chú:**
-- KH không bắt buộc ở bước này — chỉ bắt buộc trước khi thanh toán (A2)
+- **3 lane song song sau B** (clarification 2026-05-19): cashier có thể xen kẽ tự do giữa (1) chọn/tạo KH, (2) chọn NV hưởng hoa hồng, (3) tìm + thêm SP. Không có thứ tự bắt buộc — UI hỗ trợ thao tác đồng thời cho đến khi user bấm "Xem lại đơn".
+  - **Lane KH** — optional ở A1, **bắt buộc trước khi confirm/thanh toán** (rule A2 — issue #102 enforce). Entry: nút "Chọn khách hàng" trong cart panel. Sub-flow: A7.
+  - **Lane Comm** — optional luôn (per [#104](../planning/issue_log_staging_dev.md)). Dropdown chọn nhân viên hưởng hoa hồng từ `hr.employee` (≠ cashier auto-track). Nếu cashier không pick → BE để Odoo default; sau Odoo deploy field mới sẽ tách rõ "cashier vs commission". Đợi Odoo dev ship.
+  - **Lane SP** — vòng lặp `C → D → E → F/G → H → C`. Đây là path bắt buộc (đơn phải có tối thiểu 1 dòng SP).
 - **Bước E split 4 nhánh theo combo `có-serial × có-tồn-kho`** (clarification 2026-05-18):
 
 | Có serial? | Tồn kho? | Behavior | Node |
