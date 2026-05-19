@@ -84,27 +84,46 @@ flowchart TD
 
     A([Bắt đầu]):::terminal --> B[Warehouse tự động chọn\ntheo location của user]:::system
     B --> C[Tìm kiếm sản phẩm\ntên / SKU / barcode / serial]:::user
-    C --> D[Thêm SP vào đơn\nChọn serial nếu có]:::user
+    C --> D[Thêm SP vào đơn]:::user
     D --> E{SP có serial?}:::decision
-    E -- Có --> F[Gợi ý serial từ stock.lot\nUser chọn / nhập]:::user
-    E -- Không --> G[Thêm trực tiếp]:::system
-    F --> H{Còn thêm SP?}:::decision
-    G --> H
+
+    E -- Có --> F{Có tồn kho\ntại location?}:::decision
+    F -- Có tồn kho --> F1[Gợi ý serial từ stock.lot\nUser chọn / nhập serial]:::user
+    F -- Chưa có tồn kho --> F2[Thêm SP dưới dạng đặt cọc\nserial = null, ghi chú `**` trong tên\nBackorder sẽ tạo khi nhập kho]:::warning
+
+    E -- Không --> G{Có tồn kho\ntại location?}:::decision
+    G -- Có tồn kho --> G1[Thêm trực tiếp\nqty theo nhu cầu]:::system
+    G -- Chưa có tồn kho --> G2[Thêm SP dưới dạng đặt cọc\nghi chú `**` trong tên\nBackorder sẽ tạo khi nhập kho]:::warning
+
+    F1 --> H{Còn thêm SP?}:::decision
+    F2 --> H
+    G1 --> H
+    G2 --> H
     H -- Có --> C
     H -- Không --> I[Xem lại đơn hàng\ngiá / số lượng]:::user
     I --> J{Hành động}:::decision
     J -- Lưu nháp --> K[INSERT draft_orders\nexpires_at = now + 8h]:::system
     K --> L([Đơn nháp lưu thành công]):::terminal
     J -- Xác nhận --> M[sale.order.create\nsale.order.action_confirm]:::system
-    M --> N[Odoo tự tạo stock.picking]:::system
+    M --> N[Odoo tự tạo stock.picking\n+ backorder cho dòng đặt cọc]:::system
     N --> O([Tiếp theo: Luồng A3 & A2]):::terminal
     J -- Hủy --> P([Kết thúc]):::terminal
 ```
 
 **Ghi chú:**
 - KH không bắt buộc ở bước này — chỉ bắt buộc trước khi thanh toán (A2)
-- SP hết hàng: cho phép thêm kèm cảnh báo, ghi `**` trong tên SP (OQ-Q04)
-- Serial chọn ngay khi thêm SP (OQ-Q04)
+- **Bước E split 4 nhánh theo combo `có-serial × có-tồn-kho`** (clarification 2026-05-18):
+
+| Có serial? | Tồn kho? | Behavior | Node |
+|---|---|---|---|
+| Có | ✓ có | Gợi ý từ `stock.lot` → cashier pick 1 serial cụ thể (qty=1/lot) | **F1** |
+| Có | ✗ chưa | Thêm vào đơn với `serial_number=null`, tên SP `** ...`, backorder | **F2** |
+| Không | ✓ có | Thêm trực tiếp theo qty cashier nhập (qty bất kỳ) | **G1** |
+| Không | ✗ chưa | Thêm vào đơn với qty preorder, tên SP `** ...`, backorder | **G2** |
+
+- **Pattern `**` thống nhất** cho mọi dòng "đặt cọc / chờ nhập kho" (F2 và G2) — không phân biệt có serial hay không. Cashier nhìn vào tên SP `**` là biết dòng này sẽ backorder.
+- **Serial gán thực tế** ở luồng A3/A4: khi hàng về kho, cashier validate picking + chọn serial từ `stock.lot` mới nhập (cho F2). G2 không cần serial nên auto-validate.
+- **OQ-K03, OQ-Q04**: cho phép thêm SP hết hàng kèm cảnh báo (banner vàng); serial chọn ngay khi có tồn (F1), defer nếu không (F2, A4).
 
 ---
 
