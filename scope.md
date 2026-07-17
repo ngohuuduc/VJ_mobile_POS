@@ -89,7 +89,7 @@ Giai đoạn phát triển ban đầu, hệ thống có **2 role**:
 
 ## 4. Kiến trúc hệ thống
 
-> **Topology** (per OQ-AH01/AH13/AH14 + clarification): 1 Docker host. **Host NGINX** (ngoài Docker) làm SSL termination + serve FE static **trực tiếp** từ filesystem + proxy `/api/*` tới BE container. BE **tuyệt đối không expose ra Internet** — bind `127.0.0.1:18000`. FE container là **one-shot sync**: khởi động → copy `dist/spa/` sang bind mount `/var/www/vj-pos/` → exit (thay vai trò Vercel). Single-domain path routing → FE gọi API bằng **relative URL** `/api/v1/...` (same-origin, không CORS). File deploy: [`.deploy/`](../.deploy/).
+> **Topology** (per OQ-AH01/AH13/AH14 + clarification): 1 Docker host. **Host NGINX** (ngoài Docker) làm SSL termination + serve FE static **trực tiếp** từ filesystem + proxy `/api/*` tới BE container. BE **tuyệt đối không expose ra Internet** — bind `127.0.0.1:18000`. FE container là **one-shot sync**: khởi động → copy `dist/spa/` sang bind mount `/var/www/vj-pos/` → exit (thay vai trò Vercel). Single-domain path routing → FE gọi API bằng **relative URL** `/api/v1/...` (same-origin, không CORS). **PostgreSQL chạy trên host riêng (external)** — BE kết nối qua `DB_HOST`; container Postgres bundled chỉ là tùy chọn (opt-in) qua profile `bundled-db` cho dev/demo all-in-one. File deploy: [`.deploy/`](../.deploy/).
 
 ```mermaid
 graph TD
@@ -107,10 +107,12 @@ graph TD
                 FastAPI["⚡ FastAPI :8000\n+ TTLCache + WeasyPrint"]
                 ImgStore["📁 Local Storage\nẢnh sản phẩm (OQ-V01)"]
             end
-            subgraph PGContainer["📦 postgres container (internal docker net)"]
-                PG["🗄️ PostgreSQL\nusers / logs / drafts / tokens"]
-            end
         end
+    end
+
+    subgraph DBHost["🗄️ PostgreSQL Host (riêng — mặc định)"]
+        PG["🗄️ PostgreSQL\nusers / logs / drafts / tokens\nBE kết nối qua DB_HOST"]
+        PGbundled["📦 (Opt-in) postgres container bundled\nprofile bundled-db — dev/demo all-in-one"]
     end
 
     subgraph External["🌍 External Services"]
@@ -131,7 +133,7 @@ graph TD
     HostNginx -->|"read static"| HostFS
     FEsync -.->|"one-shot copy"| HostFS
     HostNginx -->|"HTTP → 127.0.0.1:18000"| FastAPI
-    FastAPI <-->|"internal docker net"| PG
+    FastAPI <-->|"kết nối DB_HOST (host riêng)"| PG
     FastAPI <-->|read / write| ImgStore
     FastAPI -->|JSON-RPC| Odoo
     FastAPI -->|HTTPS REST| VietQR
@@ -151,10 +153,10 @@ graph TD
 | State Management | Pinia | Shared state: user session, cart, draft order |
 | Backend | Python FastAPI | Async, Swagger auto-doc |
 | Cache | `cachetools.TTLCache` (in-process) | Hot data: sản phẩm, tồn kho, MST, pricelist |
-| Database | PostgreSQL | Users, audit log, draft orders, refresh tokens, print templates, config |
+| Database | PostgreSQL | Users, audit log, draft orders, refresh tokens, print templates, config. Chạy trên **host riêng** (external) mặc định — BE build `DATABASE_URL` từ `DB_HOST`/`DB_PORT`/`DB_USER`/`DB_PASSWORD`/`DB_NAME` |
 | Auth | JWT (access + refresh token) | Stateless |
 | Reverse Proxy | **Host NGINX** (ngoài Docker) | Let's Encrypt SSL đã cài sẵn. Serve FE static **trực tiếp** từ `/var/www/vj-pos/` + proxy `/api/*` → BE container `127.0.0.1:18000`. BE **tuyệt đối không expose** Internet. FE gọi API bằng relative URL (same-origin, không CORS). Config mẫu: [`.deploy/nginx.host.conf.example`](../.deploy/nginx.host.conf.example) |
-| Container | Docker Compose (`.deploy/docker-compose.yml`) | 1 host: **FE one-shot sync** (busybox, copy `dist/spa/` → bind mount `/var/www/vj-pos/` rồi exit — thay vai trò Vercel) + **BE long-running** (FastAPI) + **Postgres** (internal docker net). |
+| Container | Docker Compose (`.deploy/docker-compose.yml`) | 1 host: **FE one-shot sync** (busybox, copy `dist/spa/` → bind mount `/var/www/vj-pos/` rồi exit — thay vai trò Vercel) + **BE long-running** (FastAPI). **Postgres nằm ở host riêng** — container Postgres bundled chỉ chạy khi bật profile `bundled-db` (opt-in, dev/demo). |
 | FE ↔ BE communication | Relative URL `/api/v1/...` | Same-origin qua host NGINX, **không cần runtime config injection**. Không CORS preflight. |
 | Odoo connector | httpx async — JSON-RPC | Tránh control-byte bug của XML-RPC. Singleton + semaphore 8 RPC đồng thời, timeout 30s |
 | PDF generation | `WeasyPrint` + `Jinja2` (Python, backend) | FastAPI render HTML/CSS template → PDF binary |
@@ -379,7 +381,7 @@ VJ_POS_Platform/
 | FastAPI server | `uvicorn --reload` (1 worker) | `gunicorn` + `uvicorn` workers |
 | FE bind | Vite :9000 trên host | Container Nginx :80, bind `127.0.0.1:XXXX` trên host |
 | BE bind | `0.0.0.0:8000` (local) | **`127.0.0.1:8000`** — TUYỆT ĐỐI không expose Internet |
-| Postgres | Compose expose `:5432` ra localhost | Internal docker network only |
+| Postgres | Compose expose `:5432` ra localhost | **Host riêng (external)** — BE kết nối qua `DB_HOST`. Container Postgres bundled chỉ opt-in qua profile `bundled-db` |
 | Logging | `stdout` (console) | File `*.log` + rotation → Loki qua Grafana Alloy (planned) |
 | Debug / Reload | `DEBUG=true`, hot reload bật | `DEBUG=false`, tối ưu bundle |
 | CORS | `localhost:9000` | **Không cần CORS** (same-origin qua host NGINX) |

@@ -18,6 +18,7 @@ Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) ch
 | A5 — Hủy đơn | **REMOVED khỏi POS UI.** Toàn bộ cancellation đi Odoo sale.order → Cancel button. | #51 |
 | A6 — Đổi location | Re-fetch products + inventory khi LocationBadge đổi location. Warehouse auto-resolve từ location. | #1, #2, #38 |
 | A7 — Tạo KH | Form thêm DOB; 3 field (name/phone/email) bắt buộc, email optional sau staging (#85); MST auto-fill qua VietQR lookup. | #3, #48, #49, #85 |
+| B4 — Reset Password | LoginPage thêm link **"Quên mật khẩu?"** (user tự reset) → `POST /auth/forgot-password`. | #110 |
 | Commission | **Refactor in progress (#104)**: tách 2 field — (a) field mới (TBD) auto-write `cashier = pos_user.hr_employee_id`, (b) `commission_employee` cho user pick từ dropdown `hr.employee`. Đợi Odoo module ship field mới. | #9, #104 |
 | Invoice journal | **Pending Odoo module (#103)**: thêm `stock.warehouse.sale_journal_id` → POS đọc khi tạo invoice + write `account.move.journal_id` trước `action_post`. Hiện tại fallback default → mọi đơn vào "11NPS - Bán Hàng" (sai). | #103 |
 
@@ -441,7 +442,7 @@ sequenceDiagram
     rect rgb(219, 234, 254)
         Note over FE,User: Phản hồi người dùng
         FE->>FE: Lưu token (memory) + refresh token (localStorage)
-        FE->>FE: Khởi động idle watcher (5 phút)
+        FE->>FE: Khởi động idle watcher (30 phút)
         FE->>FE: Hiển thị loading spinner "Đang tải dữ liệu..."
         FE-->>User: Vào màn hình chính (sau khi cache warm)
     end
@@ -451,7 +452,7 @@ sequenceDiagram
 - Credentials quản lý trên PostgreSQL local — không dùng tài khoản Odoo
 - Thông tin cá nhân (tên, email, SĐT...) lấy từ `hr.employee` trên Odoo
 - Khóa tài khoản sau 5 lần sai → ADMIN mở thủ công (OQ-M04, OQ-W03)
-- Idle timeout 5 phút → tự đăng xuất (OQ-M03)
+- Idle timeout 30 phút → countdown 60s → tự đăng xuất (OQ-M03; nâng từ 5 phút sau phản hồi staging — 5 phút quá ngắn cho cashier giữa 2 khách)
 - Pre-fetch chạy song song ngay sau login — 4 Odoo calls đồng thời → giảm tải lần đầu dùng SP/tồn kho
 - Prefetch timeout 60s — nếu vẫn fail sau 60s, hiển thị lỗi yêu cầu user liên hệ ADMIN.
 - FE hiển thị loading cho đến khi `prefetch_ready: true` → không cho vào màn hình chính sớm khi cache chưa warm
@@ -599,6 +600,7 @@ sequenceDiagram
 ```
 
 **Ghi chú:**
+- **Entry Kịch bản 2 (#110)**: LoginPage có link **"Quên mật khẩu?"** hiển thị ngay dưới form đăng nhập → mở dialog nhập email → `POST /auth/forgot-password`. User không cần ADMIN can thiệp.
 - Email lấy từ `hr.employee.work_email` trên Odoo
 - Token reset hết hạn sau 1 giờ
 - Password policy: min 8 ký tự, chữ hoa + số + ký tự đặc biệt (OQ-W01)
