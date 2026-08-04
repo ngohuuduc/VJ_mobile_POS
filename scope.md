@@ -48,6 +48,7 @@ VJ Mobile POS là một ứng dụng web POS nhẹ, chạy trên trình duyệt,
 | 10 | Quản lý template in | ADMIN chỉnh sửa template HTML/CSS trong app, lưu PostgreSQL | Đã xác nhận |
 | 11 | Hoá đơn điện tử — Misa | Sau thanh toán tự động tạo hoá đơn nháp trên Misa qua API; thông báo email kế toán thuế | Đang thiết kế |
 | 12 | Thanh toán COD | Giao hàng & thu tiền hộ qua đơn vị vận chuyển; ghi nhận vận đơn, theo dõi trạng thái thu hộ | Đang thiết kế |
+| 13 | Xem Profile khách hàng | Nhân viên mở bảng thông tin KH (`res.partner`) + **chương trình khuyến mãi đang áp dụng** cho KH đó, đọc từ Odoo `coupon.program` (`program_type=promotion_program`, `active`, còn hạn, thỏa `rule_partners_domain`). **Chỉ xem read-only** — không áp discount vào đơn (áp discount vẫn ngoài phạm vi, xem B-03). Chi tiết design: [issue #115](../planning/issue_log_staging_dev.md), luồng [A8](process_flow.md). | Đang thiết kế |
 
 ### Ngoài phạm vi (Out of Scope)
 
@@ -226,6 +227,7 @@ User login thành công
 | Khách hàng | `res.partner` | `search_read`, `create`, `write` |
 | Sản phẩm | `product.product` | `search_read` |
 | Pricelist | `product.pricelist` | `get_product_price` |
+| Khuyến mãi (Profile KH) | `coupon.program` (+ `coupon.rule`, `coupon.reward`) | `search_read` (lọc `program_type=promotion_program`, `active=True`, còn hạn; đối chiếu `rule_partners_domain` với KH). Odoo 14 CE — **không** có `loyalty.program` (Odoo 16+) |
 | Nhân viên | `hr.employee` | `search_read` (lấy thông tin cá nhân khi tạo user POS) |
 
 Backend dùng **JSON-RPC** (qua `httpx` async) để gọi các method trên, không dùng `xmlrpc.client` — tránh bug control-byte trên một số payload Odoo 14 CE.

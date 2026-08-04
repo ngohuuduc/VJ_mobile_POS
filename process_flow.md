@@ -49,6 +49,7 @@ Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) ch
 | A5 | Hủy đơn hàng | Hủy theo trạng thái + phân quyền |
 | A6 | Xuất hoá đơn điện tử | Tạo nháp trên Misa + thông báo kế toán thuế |
 | A7 | Tạo / Cập nhật Khách hàng | Tìm / tạo / sửa `res.partner`, auto-fill MST qua VietQR, sync Odoo ngay |
+| A8 | Xem Profile Khách hàng | Mở bảng thông tin KH + chương trình khuyến mãi đang áp dụng (Odoo `coupon.program`) |
 
 ### Phần B — Technical Flows (Kỹ thuật)
 
@@ -389,6 +390,42 @@ flowchart TD
 - **Đính kèm vào cart**: nếu entry từ màn Tạo đơn (`/orders/new`), sau khi lưu thành công → `cart.setCustomer(...)` → đóng dialog → quay lại màn chính.
 - **Error handling**: Odoo fail → giữ dialog mở, show error, audit_log ghi lại; user có thể retry hoặc hủy.
 - **Không cho xóa KH**: out of scope giai đoạn này (chỉnh sửa trên Odoo nếu cần).
+
+---
+
+## A8. Luồng Xem Profile Khách hàng
+
+Nhân viên mở "Profile khách hàng" để xem nhanh thông tin KH và **các chương trình khuyến mãi đang áp dụng** cho KH đó. Chỉ đọc (read-only) — không áp discount vào đơn.
+
+```mermaid
+flowchart TD
+    classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
+    classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
+    classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
+    classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
+    classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
+
+    START([Entry: nút Xem Profile / click tên KH]):::terminal --> HASKH{Đã có KH?}:::decision
+    HASKH -- Chưa --> PICK[Mở dialog chọn KH\nsub-flow A7]:::user
+    HASKH -- Rồi --> LOAD[GET /customers/id/profile]:::system
+    PICK --> LOAD
+    LOAD --> INFO[Thông tin KH\ntên, SĐT, email, MST, địa chỉ]:::system
+    LOAD --> PROMO[Query coupon.program\nprogram_type=promotion_program\nactive=True + còn hạn\n+ đối chiếu rule_partners_domain]:::system
+    PROMO --> CHECK{KH thỏa chương trình nào?}:::decision
+    CHECK -- Có --> LIST[Danh sách KM đang áp dụng\ntên · reward_description · % giảm\nđiều kiện min amount/qty · hạn dùng]:::system
+    CHECK -- Không --> EMPTY[Hiển thị Chưa có KM áp dụng]:::warning
+    INFO --> DONE([Đóng Profile]):::terminal
+    LIST --> DONE
+    EMPTY --> DONE
+```
+
+**Ghi chú:**
+- **Nguồn dữ liệu:** Odoo 14 CE `coupon.program` (module `coupon` + `sale_coupon`). Odoo 14 **không** có `loyalty.program` (Odoo 16+). abc2022 hiện có ~7 chương trình (vd "Khách hàng review giảm 100K", "Giảm giá 2%").
+- **KM "đang áp dụng":** `program_type='promotion_program'` (KM tự động — khác `coupon_program` cần nhập mã) + `active=True` + `now ∈ [rule_date_from, rule_date_to]` + KH thỏa `rule_partners_domain`.
+- **`rule_partners_domain` là chuỗi domain** (không phải Many2one) → với mỗi chương trình active, kiểm tra KH có match không bằng `search_count("res.partner", eval(rule_partners_domain) + [("id","=",customer_id)]) > 0`.
+- **Read-only:** chỉ hiển thị để nhân viên tư vấn KH — **không** tự áp discount vào `sale.order` (áp discount vẫn ngoài phạm vi — B-03).
+- **Entry points:** nút "Xem Profile" trên cart panel (`CustomerButton`) / trong dialog chọn KH (A7) / màn chi tiết đơn.
+- Chi tiết kỹ thuật + endpoint đề xuất: [issue #115](../planning/issue_log_staging_dev.md).
 
 ---
 
