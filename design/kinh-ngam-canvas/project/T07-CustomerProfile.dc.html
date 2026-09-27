@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Profile khách hàng · iPad</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Semi+Condensed:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#EEF0EE;font-family:"Barlow","Segoe UI",sans-serif;color:#1A1F24}
+a{color:#1A1F24;text-decoration:none}a:hover{color:#8A5A00}
+button,input{font:inherit;color:inherit}
+dl,dd,ul{margin:0;padding:0}
+</style>
+</helmet>
+<div style="width: 1180px; height: 820px; position: relative; overflow: hidden; background: #EEF0EE; font-family: Barlow, sans-serif; color: #1A1F24">
+
+  <!-- Underlying order screen (dimmed) -->
+  <div aria-hidden="true" style="position: absolute; inset: 0; display: flex; flex-direction: column">
+    <div style="height: 56px; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 0 16px 0 8px; background: #FFFFFF; border-bottom: 1px solid #D6DBD8; flex-shrink: 0">
+      <span style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></span>
+      <img src="/_blob/ca4bc8854f059ad7465e93434a0ee522" alt="VJShop.vn" style="height: 24px; width: auto">
+      <div style="flex-grow: 1"></div>
+      <span style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border: 1px solid #9AA5A0; border-radius: 8px; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 15px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M3 9l9-5 9 5v11H3z"></path><path d="M7 20v-7h10v7"></path></svg>23CTO/Stock<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg></span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: #4E5A55; margin-left: 8px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #17663F"></span>Online</span>
+      <span style="width: 36px; height: 36px; border-radius: 50%; background: #1A1F24; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 16px; margin-left: 8px">H</span>
+    </div>
+    <div style="height: 48px; flex-shrink: 0; box-sizing: border-box; display: flex; gap: 4px; padding: 0 12px; background: #FFFFFF; border-bottom: 1px solid #D6DBD8">
+      <span style="display: inline-flex; align-items: center; padding: 0 16px; font-size: 15px; font-weight: 600; box-shadow: inset 0 -2px 0 #1A1F24">Tạo đơn</span>
+      <span style="display: inline-flex; align-items: center; padding: 0 16px; font-size: 15px; color: #4E5A55">Đơn hàng</span>
+      <span style="display: inline-flex; align-items: center; padding: 0 16px; font-size: 15px; color: #4E5A55">Tồn kho</span>
+      <span style="display: inline-flex; align-items: center; padding: 0 16px; font-size: 15px; color: #4E5A55">Backorder</span>
+      <span style="display: inline-flex; align-items: center; padding: 0 16px; font-size: 15px; color: #4E5A55">Thu cọc</span>
+    </div>
+    <div style="flex-grow: 1; display: flex; min-height: 0">
+      <div style="flex-grow: 1; min-width: 0; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+        <div style="height: 44px; border-radius: 10px; background: #FFFFFF; border: 1px solid #9AA5A0; display: flex; align-items: center; padding: 0 12px; color: #66716C; font-size: 15px">Tìm SKU / Tên SP / Quét mã vạch...</div>
+        <div style="background: #FFFFFF; border: 1px solid #D6DBD8; border-radius: 14px; overflow: hidden">
+          <sc-for list="{{ products }}" as="p" hint-placeholder-count="7">
+            <div style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 0 16px; border-bottom: 1px solid #D6DBD8">
+              <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 500">{{ p.name }}</span><span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 14px; color: #66716C">{{ p.sku }}</span></div>
+              <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 16px">{{ p.price }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="width: 380px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-left: 1px solid #D6DBD8; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+        <div style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 20px">Giỏ hàng · 2 món</div>
+        <div style="height: 44px; border: 1px solid #9AA5A0; border-radius: 10px; display: flex; align-items: center; padding: 0 12px; font-size: 15px; font-weight: 600">Vũ Thị Lệ Phương<span style="margin-left: auto; font-size: 13px; padding: 2px 8px; border-radius: 8px; background: #FCEFCF; color: #7A4B00">6 KM</span></div>
+        <div style="border-top: 1px solid #D6DBD8; padding-top: 12px; font-size: 15px; font-weight: 500">Sony Alpha A7 IV (Body)</div>
+        <div style="border-top: 1px solid #D6DBD8; padding-top: 12px; font-size: 15px; font-weight: 500">Fujifilm X-T5 Kit XF 16-80mm</div>
+        <div style="flex-grow: 1"></div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid #D6DBD8; padding-top: 12px"><span style="font-size: 15px; color: #4E5A55">Tổng cộng, 2 món</span><span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 28px">94.980.000 ₫</span></div>
+        <div style="display: flex; gap: 8px"><span style="flex-grow: 1; height: 48px; border: 1px solid #9AA5A0; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-weight: 600">Lưu nháp</span><span style="flex-grow: 2; height: 48px; background: #F0A500; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700">Xác nhận</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scrim + dialog -->
+  <div style="position: absolute; inset: 0; background: rgba(26,31,36,.48); display: flex; align-items: center; justify-content: center">
+    <div role="dialog" aria-modal="true" aria-labelledby="t07-title" style="width: 1116px; height: 772px; box-sizing: border-box; background: #FFFFFF; border-radius: 14px; box-shadow: 0 10px 28px rgba(26,31,36,.16); display: flex; flex-direction: column; overflow: hidden">
+      <div style="height: 60px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 8px 0 20px; border-bottom: 1px solid #D6DBD8">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="10" r="3"></circle><path d="M6.5 18.5c1.5-2 3.4-3 5.5-3s4 1 5.5 3"></path></svg>
+        <div style="flex-grow: 1; display: flex; align-items: baseline; gap: 10px">
+          <h2 id="t07-title" style="margin: 0; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 22px">Profile khách hàng</h2>
+          <span style="font-size: 15px; color: #4E5A55">Vũ Thị Lệ Phương</span>
+        </div>
+        <a href="T06-CustomerPick.dc.html" aria-label="Đóng" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+      </div>
+
+      <div style="flex-grow: 1; min-height: 0; display: flex">
+        <section aria-label="Thông tin khách hàng" style="width: 330px; flex-shrink: 0; box-sizing: border-box; padding: 20px; border-right: 1px solid #D6DBD8; display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; align-items: center; gap: 14px">
+            <span style="width: 56px; height: 56px; border-radius: 50%; background: #1A1F24; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 24px; flex-shrink: 0">V</span>
+            <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 22px; line-height: 1.1">Vũ Thị Lệ Phương</span>
+              <span style="font-size: 14px; color: #66716C">Cá nhân · khách từ 02/2023</span>
+            </div>
+          </div>
+          <dl style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 14px">
+            <div style="display: flex; flex-direction: column; gap: 2px"><dt style="font-size: 13px; color: #66716C">SĐT</dt><dd style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 17px">0350 978 833</dd></div>
+            <div style="display: flex; flex-direction: column; gap: 2px"><dt style="font-size: 13px; color: #66716C">MST</dt><dd style="font-size: 16px; color: #4E5A55">—</dd></div>
+            <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 2px"><dt style="font-size: 13px; color: #66716C">Email</dt><dd style="font-size: 16px">phuong.vtl@gmail.com</dd></div>
+            <div style="display: flex; flex-direction: column; gap: 2px"><dt style="font-size: 13px; color: #66716C">Ngày sinh</dt><dd style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 17px">14/03/1992</dd></div>
+            <div style="display: flex; flex-direction: column; gap: 2px"><dt style="font-size: 13px; color: #66716C">Bảng giá</dt><dd style="font-size: 16px">Giá bán lẻ (VND)</dd></div>
+            <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 2px"><dt style="font-size: 13px; color: #66716C">Địa chỉ</dt><dd style="font-size: 16px; line-height: 1.4">128 Nguyễn Thị Minh Khai, P. Võ Thị Sáu, Q.3, TP. Hồ Chí Minh</dd></div>
+          </dl>
+          <div style="flex-grow: 1"></div>
+          <a href="T06-CustomerPick.dc.html" style="height: 44px; align-self: flex-start; padding: 0 16px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid #9AA5A0; border-radius: 10px; font-size: 15px; font-weight: 600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>Quay lại danh sách khách</a>
+        </section>
+
+        <section aria-labelledby="t07-promo" style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column">
+          <div style="flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 16px 20px 12px">
+            <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+              <h3 id="t07-promo" style="margin: 0; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 20px">Khuyến mãi đang áp dụng{{ countLabel }}</h3>
+              <span style="font-size: 14px; color: #66716C">Khuyến mãi lấy từ Odoo, chỉ xem · cập nhật 14:05</span>
+            </div>
+            <button type="button" style="height: 44px; padding: 0 14px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid #9AA5A0; border-radius: 10px; background: #FFFFFF; font-size: 15px; font-weight: 600; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 4v7h-7"></path></svg>Tải lại từ Odoo</button>
+          </div>
+          <div style="flex-grow: 1; min-height: 0; overflow: auto; padding: 4px 20px 20px">
+            <sc-if value="{{ isNormal }}" hint-placeholder-val="{{ true }}">
+              <ul style="list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+                <sc-for list="{{ promos }}" as="p" hint-placeholder-count="6">
+                  <li style="border: 1px solid #D6DBD8; border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+                    <div style="display: flex; align-items: flex-start; gap: 8px">
+                      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                        <span style="font-size: 16px; font-weight: 600">{{ p.name }}</span>
+                        <span style="font-size: 15px; font-weight: 600; color: #8A5A00">{{ p.reward }}</span>
+                      </div>
+                      <sc-if value="{{ p.coupon }}" hint-placeholder-val="{{ false }}"><span style="flex-shrink: 0; height: 24px; padding: 0 8px; display: inline-flex; align-items: center; border-radius: 8px; background: #E1F0E6; color: #17663F; font-size: 13px; font-weight: 600">Mã riêng</span></sc-if>
+                      <sc-if value="{{ p.nextOrder }}" hint-placeholder-val="{{ false }}"><span style="flex-shrink: 0; height: 24px; padding: 0 8px; display: inline-flex; align-items: center; border-radius: 8px; background: #EEF0EE; color: #4E5A55; font-size: 13px; font-weight: 600">Đơn sau</span></sc-if>
+                    </div>
+                    <ul style="padding-left: 18px; display: flex; flex-direction: column; gap: 2px; font-size: 14px; color: #4E5A55">
+                      <sc-for list="{{ p.conds }}" as="c" hint-placeholder-count="2"><li>{{ c }}</li></sc-for>
+                    </ul>
+                    <div style="display: flex; align-items: center; gap: 8px; min-height: 44px; border-top: 1px solid #D6DBD8; padding-top: 6px; margin-top: auto">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4E5A55" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+                      <span style="font-size: 14px; color: #4E5A55">{{ p.validity }}</span>
+                      <sc-if value="{{ p.soon }}" hint-placeholder-val="{{ false }}"><span style="height: 24px; padding: 0 8px; display: inline-flex; align-items: center; border-radius: 8px; background: #FCEFCF; color: #7A4B00; font-size: 13px; font-weight: 600">Sắp hết hạn</span></sc-if>
+                      <div style="flex-grow: 1"></div>
+                      <sc-if value="{{ p.hasCode }}" hint-placeholder-val="{{ true }}">
+                        <button type="button" aria-label="Sao chép mã {{ p.code }}" style="height: 44px; max-width: 170px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #D6DBD8; border-radius: 8px; background: #EEF0EE; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 15px; cursor: pointer"><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ p.code }}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" style="flex-shrink: 0"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h8"></path></svg></button>
+                      </sc-if>
+                    </div>
+                    <span style="font-size: 13px; color: #66716C">{{ p.company }}</span>
+                  </li>
+                </sc-for>
+              </ul>
+            </sc-if>
+            <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; align-items: center; gap: 10px; padding: 16px; border-radius: 10px; background: #EEF0EE; font-size: 15px; color: #4E5A55">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M3 12V3h9l9 9-9 9z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></svg>Chưa có khuyến mãi áp dụng cho khách hàng này.
+              </div>
+            </sc-if>
+            <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+              <div role="alert" style="display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: 10px; background: #FBE4E1; color: #A1231B; font-size: 15px">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6M12 16.5v.5"></path></svg>
+                <span style="flex-grow: 1">Không tải được khuyến mãi từ Odoo. Kiểm tra kết nối rồi thử lại.</span>
+                <button type="button" style="height: 44px; padding: 0 14px; border: 0; border-radius: 10px; background: transparent; color: #A1231B; font-weight: 700; cursor: pointer">Thử lại</button>
+              </div>
+            </sc-if>
+            <p style="margin: 16px 0 0; font-size: 14px; color: #66716C">Chương trình được quản lý trên Odoo. POS chỉ hiển thị để tư vấn — không tự áp dụng vào đơn hàng.</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1180,"height":820},"state":{"editor":"enum","options":["normal","empty","error"],"default":"normal"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const state = this.props.state ?? 'normal';
+    const co = 'VJS Hệ thống';
+    return {
+      isNormal: state === 'normal',
+      isEmpty: state === 'empty',
+      isError: state === 'error',
+      countLabel: state === 'normal' ? ' (6)' : (state === 'empty' ? ' (0)' : ''),
+      promos: [
+        { name: 'Phiếu quà tặng khách thân thiết', reward: 'Giảm 500.000 ₫ trên tổng đơn', conds: ['Chỉ dành cho Vũ Thị Lệ Phương', 'Dùng 1 lần, đơn từ 3.000.000 ₫'], validity: 'Đến 31/10/2026', soon: false, hasCode: true, code: '627145344932627426', coupon: true, nextOrder: false, company: co },
+        { name: 'Khách hàng review giảm 100K', reward: 'Giảm 100.000 ₫ trên tổng đơn', conds: ['Khách để lại đánh giá Google Maps', 'Mỗi khách 1 lần'], validity: 'Đến 30/09/2026', soon: true, hasCode: true, code: 'RV100K', coupon: false, nextOrder: false, company: co },
+        { name: 'Giảm giá đơn hàng 200k', reward: 'Giảm 200.000 ₫ trên tổng đơn', conds: ['Đơn từ 5.000.000 ₫', 'Áp dụng mọi khách hàng'], validity: 'Không giới hạn thời gian', soon: false, hasCode: true, code: 'GG200', coupon: false, nextOrder: false, company: co },
+        { name: 'Giảm giá 2%', reward: 'Giảm 2% trên tổng đơn, tối đa 2.000.000 ₫', conds: ['Đơn từ 20.000.000 ₫', 'Không cộng dồn với GG200'], validity: 'Đến 31/12/2026', soon: false, hasCode: true, code: 'GG2%VJS', coupon: false, nextOrder: false, company: co },
+        { name: 'Mua body tặng thẻ nhớ', reward: 'Tặng 1 thẻ SanDisk Extreme Pro 128GB', conds: ['Mua máy ảnh body Sony hoặc Fujifilm', 'Tự áp trên Odoo khi đủ điều kiện'], validity: 'Đến 15/10/2026', soon: false, hasCode: false, code: '', coupon: false, nextOrder: false, company: co },
+        { name: 'Tích điểm thành viên', reward: 'Giảm 5% cho đơn tiếp theo', conds: ['Đơn hiện tại từ 10.000.000 ₫', 'Mã gửi qua SMS sau khi giao hàng'], validity: 'Không giới hạn thời gian', soon: false, hasCode: false, code: '', coupon: false, nextOrder: true, company: co }
+      ],
+      products: [
+        { name: 'Sony Alpha A7 IV (Body)', sku: 'SP006401', price: '52.990.000 ₫' },
+        { name: 'DJI Osmo Pocket 3 Creator Combo', sku: 'SP006312', price: '14.490.000 ₫' },
+        { name: 'Fujifilm X-T5 Kit XF 16-80mm', sku: 'SP006118', price: '51.990.000 ₫' },
+        { name: 'Tamron 28-75mm F2.8 Di III VXD G2 for Sony E', sku: 'SP005920', price: '21.490.000 ₫' },
+        { name: 'Canon EOS R6 Mark II (Body)', sku: 'SP006050', price: '55.990.000 ₫' },
+        { name: 'Sigma 24-70mm F2.8 DG DN II Art', sku: 'SP006233', price: '28.990.000 ₫' },
+        { name: 'K&F Concept Nano-X Black Mist 1/4 67mm', sku: 'SP004410', price: '690.000 ₫' },
+        { name: 'Aputure LS 600d Pro (V-mount)', sku: 'SP006222', price: '48.890.000 ₫' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

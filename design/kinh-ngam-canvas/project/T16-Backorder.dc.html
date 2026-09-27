@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Backorder và nháp – iPad</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Semi+Condensed:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#EEF0EE;font-family:"Barlow","Segoe UI",sans-serif;color:#1A1F24}
+a{color:#1A1F24;text-decoration:none}a:hover{color:#8A5A00}
+button,input{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 1180px; height: 820px; overflow: hidden; display: flex; flex-direction: column; background: #EEF0EE; font-family: Barlow, sans-serif; color: #1A1F24">
+
+  <header style="height: 56px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-bottom: 1px solid #D6DBD8; display: flex; align-items: center; gap: 8px; padding: 0 12px 0 6px">
+    <button type="button" aria-label="Mở menu" style="width: 44px; height: 44px; border: 0; background: transparent; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #1A1F24"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+    <img src="/_blob/ca4bc8854f059ad7465e93434a0ee522" alt="VJShop.vn" style="height: 24px; width: auto">
+    <div style="flex-grow: 1"></div>
+    <button type="button" style="height: 36px; padding: 0 10px; border: 1px solid #9AA5A0; border-radius: 8px; background: #FFFFFF; display: inline-flex; align-items: center; gap: 6px; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 15px; color: #1A1F24"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6v10H3z"></path><path d="M8 20v-6h8v6"></path></svg>23CTO/Stock<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10l5 5 5-5"></path></svg></button>
+    <span style="display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; font-size: 14px; font-weight: 500; color: #17663F"><span style="width: 8px; height: 8px; border-radius: 50%; background: #17663F"></span>Online</span>
+    <button type="button" aria-label="Tài khoản Nguyễn Thị Hường" style="width: 44px; height: 44px; border: 0; background: transparent; display: inline-flex; align-items: center; justify-content: center"><span style="width: 34px; height: 34px; border-radius: 50%; background: #1A1F24; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px">H</span></button>
+  </header>
+
+  <nav aria-label="Điều hướng chính" style="height: 48px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-bottom: 1px solid #D6DBD8; display: flex; align-items: stretch; gap: 4px; padding: 0 12px">
+    <a href="T03-OrderNew.dc.html" style="display: inline-flex; align-items: center; padding: 0 18px; font-size: 15px; font-weight: 500; color: #4E5A55; border-bottom: 2px solid transparent">Tạo đơn</a>
+    <a href="T10-Orders.dc.html" style="display: inline-flex; align-items: center; padding: 0 18px; font-size: 15px; font-weight: 500; color: #4E5A55; border-bottom: 2px solid transparent">Đơn hàng</a>
+    <a href="T17-Inventory.dc.html" style="display: inline-flex; align-items: center; padding: 0 18px; font-size: 15px; font-weight: 500; color: #4E5A55; border-bottom: 2px solid transparent">Tồn kho</a>
+    <a href="T16-Backorder.dc.html" aria-current="page" style="display: inline-flex; align-items: center; padding: 0 18px; font-size: 15px; font-weight: 600; color: #1A1F24; border-bottom: 2px solid #1A1F24">Backorder</a>
+    <a href="T15-Deposit.dc.html" style="display: inline-flex; align-items: center; padding: 0 18px; font-size: 15px; font-weight: 500; color: #4E5A55; border-bottom: 2px solid transparent">Thu cọc</a>
+  </nav>
+
+  <main style="flex-grow: 1; min-height: 0; box-sizing: border-box; padding: 18px 24px; display: flex; flex-direction: column; gap: 14px; overflow: hidden">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px">
+      <h1 style="margin: 0; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 26px">Backorder &amp; Nháp</h1>
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="font-size: 14px; color: #66716C">Cập nhật lúc <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; color: #4E5A55">14:05</span></span>
+        <button type="button" style="height: 44px; padding: 0 16px; border: 1px solid #9AA5A0; border-radius: 10px; background: #FFFFFF; display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: #1A1F24"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"></path><path d="M20 4v5h-5"></path></svg>Tải lại</button>
+      </div>
+    </div>
+
+    <section style="background: #FFFFFF; border: 1px solid #D6DBD8; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column">
+      <div role="tablist" aria-label="Loại danh sách" style="display: flex; gap: 4px; padding: 0 10px; border-bottom: 1px solid #D6DBD8; height: 52px; align-items: stretch">
+        <sc-if value="{{ isBO }}" hint-placeholder-val="{{ true }}">
+          <button type="button" role="tab" aria-selected="true" onClick="{{ showBO }}" style="border: 0; border-bottom: 2px solid #1A1F24; background: transparent; padding: 0 16px; display: inline-flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #1A1F24">Backorder <span style="min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; background: #1A1F24; color: #FFFFFF; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 13px; display: inline-flex; align-items: center; justify-content: center">3</span></button>
+          <button type="button" role="tab" aria-selected="false" onClick="{{ showDraft }}" style="border: 0; border-bottom: 2px solid transparent; background: transparent; padding: 0 16px; display: inline-flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 500; color: #4E5A55">Đơn nháp <span style="min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; background: #EEF0EE; color: #1A1F24; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 13px; display: inline-flex; align-items: center; justify-content: center">2</span></button>
+        </sc-if>
+        <sc-if value="{{ isDraft }}" hint-placeholder-val="{{ false }}">
+          <button type="button" role="tab" aria-selected="false" onClick="{{ showBO }}" style="border: 0; border-bottom: 2px solid transparent; background: transparent; padding: 0 16px; display: inline-flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 500; color: #4E5A55">Backorder <span style="min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; background: #EEF0EE; color: #1A1F24; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 13px; display: inline-flex; align-items: center; justify-content: center">3</span></button>
+          <button type="button" role="tab" aria-selected="true" onClick="{{ showDraft }}" style="border: 0; border-bottom: 2px solid #1A1F24; background: transparent; padding: 0 16px; display: inline-flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: #1A1F24">Đơn nháp <span style="min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; background: #1A1F24; color: #FFFFFF; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 13px; display: inline-flex; align-items: center; justify-content: center">2</span></button>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ isBO }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; align-items: center; gap: 8px; padding: 12px 16px">
+          <button type="button" aria-pressed="true" style="height: 44px; padding: 0 14px; border: 1px solid #1A1F24; border-radius: 8px; background: #1A1F24; color: #FFFFFF; font-size: 15px; font-weight: 600">Tất cả · 3</button>
+          <button type="button" aria-pressed="false" style="height: 44px; padding: 0 14px; border: 1px solid #9AA5A0; border-radius: 8px; background: #FFFFFF; color: #1A1F24; font-size: 15px; font-weight: 600">Chờ hàng · 2</button>
+          <button type="button" aria-pressed="false" style="height: 44px; padding: 0 14px; border: 1px solid #9AA5A0; border-radius: 8px; background: #FFFFFF; color: #1A1F24; font-size: 15px; font-weight: 600">Đã có hàng · 1</button>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 170px 84px 60px 100px 116px 108px; column-gap: 12px; align-items: center; padding: 0 16px; height: 36px; background: #EEF0EE; font-size: 13px; font-weight: 500; color: #4E5A55">
+          <span>Sản phẩm</span><span>Khách hàng</span><span>Đơn gốc</span><span style="text-align: right">SL chờ</span><span>Ngày tạo</span><span>Trạng thái</span><span></span>
+        </div>
+        <sc-for list="{{ backorders }}" as="r" hint-placeholder-count="3">
+          <div style="display: grid; grid-template-columns: minmax(0, 1fr) 170px 84px 60px 100px 116px 108px; column-gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid #D6DBD8; min-height: 68px; box-sizing: border-box">
+            <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 16px; font-weight: 500">{{ r.product }}</span><span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 14px; color: #66716C">{{ r.sku }} · {{ r.code }}</span></div>
+            <span style="font-size: 15px">{{ r.customer }}</span>
+            <a href="T11-OrderDetail.dc.html" style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 16px; text-decoration: underline; text-decoration-color: #9AA5A0">{{ r.origin }}</a>
+            <span style="text-align: right; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 17px">{{ r.qty }}</span>
+            <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 15px">{{ r.created }}</span>
+            <div>
+              <sc-if value="{{ r.ready }}" hint-placeholder-val="{{ false }}"><span style="height: 26px; padding: 0 10px; border-radius: 8px; background: #E1F0E6; color: #17663F; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center">Đã có hàng</span></sc-if>
+              <sc-if value="{{ r.pending }}" hint-placeholder-val="{{ true }}"><span style="height: 26px; padding: 0 10px; border-radius: 8px; background: #FCEFCF; color: #7A4B00; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center">Chờ hàng</span></sc-if>
+            </div>
+            <div style="display: flex; justify-content: flex-end">
+              <sc-if value="{{ r.ready }}" hint-placeholder-val="{{ false }}"><a href="T12-Deliver.dc.html" style="height: 44px; padding: 0 12px; border: 1px solid #1A1F24; border-radius: 8px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 600">Giao hàng</a></sc-if>
+              <sc-if value="{{ r.pending }}" hint-placeholder-val="{{ true }}"><a href="T11-OrderDetail.dc.html" style="height: 44px; padding: 0 12px; border: 1px solid #9AA5A0; border-radius: 8px; display: inline-flex; align-items: center; font-size: 14px; font-weight: 600">Chi tiết</a></sc-if>
+            </div>
+          </div>
+        </sc-for>
+        <div style="padding: 12px 16px; border-top: 1px solid #D6DBD8; font-size: 13px; color: #66716C">Backorder tạo tự động trên Odoo khi giao thiếu. Khi hàng về, trạng thái chuyển sang "Đã có hàng".</div>
+      </sc-if>
+
+      <sc-if value="{{ isDraft }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; gap: 8px; padding: 14px 16px; font-size: 14px; color: #4E5A55">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#35607F" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+          Nháp lưu từ màn Tạo đơn hàng, chỉ trên máy này, tự xoá sau 8 giờ.
+        </div>
+        <div style="display: grid; grid-template-columns: 116px minmax(0, 1fr) 118px 118px 64px 130px 196px; column-gap: 12px; align-items: center; padding: 0 16px; height: 36px; background: #EEF0EE; font-size: 13px; font-weight: 500; color: #4E5A55">
+          <span>Mã nháp</span><span>Khách hàng</span><span>Tạo lúc</span><span>Hết hạn</span><span style="text-align: right">SL SP</span><span style="text-align: right">Tạm tính</span><span style="text-align: right">Thao tác</span>
+        </div>
+        <sc-for list="{{ drafts }}" as="d" hint-placeholder-count="2">
+          <div style="display: grid; grid-template-columns: 116px minmax(0, 1fr) 118px 118px 64px 130px 196px; column-gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid #D6DBD8; min-height: 68px; box-sizing: border-box">
+            <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 16px">{{ d.code }}</span>
+            <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 15px; font-weight: 500">{{ d.customer }}</span><span style="font-size: 14px; color: #66716C; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ d.lines }}</span></div>
+            <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 15px">{{ d.created }}</span>
+            <div>
+              <sc-if value="{{ d.soon }}" hint-placeholder-val="{{ false }}"><span style="height: 26px; padding: 0 10px; border-radius: 8px; background: #FCEFCF; color: #7A4B00; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center">{{ d.expires }}</span></sc-if>
+              <sc-if value="{{ d.later }}" hint-placeholder-val="{{ true }}"><span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 15px">{{ d.expires }}</span></sc-if>
+            </div>
+            <span style="text-align: right; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 16px">{{ d.items }}</span>
+            <span style="text-align: right; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 16px">{{ d.total }}</span>
+            <div style="display: flex; justify-content: flex-end; gap: 8px">
+              <a href="T03-OrderNew.dc.html" style="height: 44px; padding: 0 14px; border: 1px solid #1A1F24; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7"></path><path d="M4 4v5h5"></path></svg>Mở lại</a>
+              <button type="button" style="height: 44px; padding: 0 12px; border: 1px solid #D6DBD8; border-radius: 8px; background: #FFFFFF; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #A1231B"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg>Xoá</button>
+            </div>
+          </div>
+        </sc-for>
+      </sc-if>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1180,"height":820},"tab":{"editor":"enum","options":["backorder","drafts"],"default":"backorder"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var st = this.state || {};
+    var tab = st.tab || this.props.tab || 'backorder';
+    var BO = [
+      { product: 'Canon EOS R6 Mark II (Body)', sku: 'SP006050', code: '23CTO/OUT/01288', customer: 'Trần Minh Khoa', origin: 'S04511', qty: 1, created: '22/09/2026', ready: false },
+      { product: 'Aputure LS 600d Pro (V-mount)', sku: 'SP006222', code: '23CTO/OUT/01271', customer: 'Công ty TNHH Ảnh Việt', origin: 'S04487', qty: 2, created: '18/09/2026', ready: false },
+      { product: 'Fujifilm X-T5 Kit XF 16-80mm', sku: 'SP006118', code: '23CTO/OUT/01254', customer: 'Lê Hoàng Anh', origin: 'S04476', qty: 1, created: '15/09/2026', ready: true }
+    ];
+    var DR = [
+      { code: 'NH-2609-03', customer: 'Vũ Thị Lệ Phương', lines: 'Sony Alpha A7 IV (Body), DJI Osmo Pocket 3…', created: '26/09 · 13:40', expires: '26/09 · 21:40', soon: false, items: 2, total: '67.480.000 ₫' },
+      { code: 'NH-2609-01', customer: 'Khách lẻ', lines: 'DJI Osmo Pocket 3 Creator Combo', created: '26/09 · 09:15', expires: 'Còn 3 giờ', soon: true, items: 1, total: '14.490.000 ₫' }
+    ];
+    return {
+      isBO: tab === 'backorder',
+      isDraft: tab === 'drafts',
+      showBO: function () { self.setState({ tab: 'backorder' }); },
+      showDraft: function () { self.setState({ tab: 'drafts' }); },
+      backorders: BO.map(function (r) { return Object.assign({}, r, { pending: !r.ready }); }),
+      drafts: DR.map(function (d) { return Object.assign({}, d, { later: !d.soon }); })
+    };
+  }
+}
+</script>
+</body>
+</html>

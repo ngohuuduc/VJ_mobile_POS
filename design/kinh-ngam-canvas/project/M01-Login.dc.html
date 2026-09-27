@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Đăng nhập · Điện thoại</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Semi+Condensed:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#EEF0EE;font-family:"Barlow","Segoe UI",sans-serif;color:#1A1F24}
+a{color:#1A1F24;text-decoration:none}a:hover{color:#8A5A00}
+button,input,select{font:inherit;color:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; overflow: hidden; box-sizing: border-box; background: #EEF0EE; font-family: Barlow, sans-serif; color: #1A1F24; display: flex; flex-direction: column; padding: 0 16px 20px">
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 96px 0 28px">
+    <img src="/_blob/ca4bc8854f059ad7465e93434a0ee522" alt="VJShop.vn" style="height: 44px; width: auto">
+    <p style="margin: 0; font-size: 16px; color: #4E5A55">Hệ thống quản lý bán hàng</p>
+  </div>
+  <form style="background: #FFFFFF; border: 1px solid #D6DBD8; border-radius: 14px; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px">
+    <h1 style="margin: 0; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 24px; font-weight: 700">Đăng nhập</h1>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="m01-user" style="font-size: 14px; font-weight: 600">Tên đăng nhập</label>
+      <div style="display: flex; align-items: center; gap: 8px; height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #9AA5A0; border-radius: 10px; background: #EEF0EE; color: #4E5A55">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+        <input id="m01-user" type="text" autocomplete="username" placeholder="email@3sach.vn hoặc username" style="flex-grow: 1; min-width: 0; height: 46px; border: 0; padding: 0; background: transparent; outline: none; font-size: 16px; color: #1A1F24">
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="m01-pass" style="font-size: 14px; font-weight: 600">Mật khẩu</label>
+      <div style="display: flex; align-items: center; gap: 8px; height: 48px; box-sizing: border-box; padding: 0 0 0 12px; border: 1px solid #9AA5A0; border-radius: 10px; background: #EEF0EE; color: #4E5A55">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+        <input id="m01-pass" type="{{ pwType }}" autocomplete="current-password" placeholder="Nhập mật khẩu" style="flex-grow: 1; min-width: 0; height: 46px; border: 0; padding: 0; background: transparent; outline: none; font-size: 16px; color: #1A1F24">
+        <button type="button" onClick="{{ togglePw }}" aria-label="{{ pwLabel }}" style="width: 46px; height: 46px; flex-shrink: 0; border: 0; padding: 0; background: transparent; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #4E5A55; cursor: pointer">
+          <sc-if value="{{ showPw }}" hint-placeholder-val="{{ false }}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"></path><path d="M10.6 5.1A10 10 0 0 1 12 5c6 0 10 7 10 7a17 17 0 0 1-3.2 3.9M6.6 6.6C3.9 8.4 2 12 2 12s4 7 10 7a9.6 9.6 0 0 0 5.4-1.6"></path><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path></svg>
+          </sc-if>
+          <sc-if value="{{ hidePw }}" hint-placeholder-val="{{ true }}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </sc-if>
+        </button>
+      </div>
+    </div>
+    <label style="display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 15px; cursor: pointer">
+      <input type="checkbox" checked="{{ remember }}" onChange="{{ toggleRemember }}" style="width: 20px; height: 20px; margin: 0; accent-color: #1A1F24">
+      Ghi nhớ đăng nhập
+    </label>
+    <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border-radius: 10px; background: #FBE4E1; color: #A1231B; font-size: 14px; font-weight: 500">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6M12 16.5v.5"></path></svg>
+        <span>Tên đăng nhập hoặc mật khẩu không đúng. Còn 4 lần thử.</span>
+      </div>
+    </sc-if>
+    <a href="M02-Prefetch.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border-radius: 10px; background: #F0A500; color: #1A1F24; font-size: 17px; font-weight: 700">
+      Đăng nhập
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </a>
+    <a href="#quen-mat-khau" id="quen-mat-khau" style="align-self: center; display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; font-size: 15px; font-weight: 600; color: #35607F">Quên mật khẩu?</a>
+  </form>
+  <div style="flex-grow: 1"></div>
+  <p style="margin: 0; text-align: center; font-size: 13px; color: #4E5A55">VJShop POS v0.0.1 · 23CTO / BMT</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844},"state":{"editor":"enum","options":["normal","error"],"default":"normal"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = Object.assign({ showPw: false, remember: true }, this.state || {});
+    return {
+      showPw: st.showPw,
+      hidePw: !st.showPw,
+      pwType: st.showPw ? 'text' : 'password',
+      pwLabel: st.showPw ? 'Ẩn mật khẩu' : 'Hiện mật khẩu',
+      togglePw: () => this.setState({ showPw: !st.showPw }),
+      remember: st.remember,
+      toggleRemember: () => this.setState({ remember: !st.remember }),
+      isError: (this.props.state ?? 'normal') === 'error'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Giao hàng · Mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Semi+Condensed:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#EEF0EE;font-family:"Barlow","Segoe UI",sans-serif;color:#1A1F24}
+a{color:#1A1F24;text-decoration:none}a:hover{color:#8A5A00}
+</style>
+</helmet>
+<div role="dialog" aria-modal="true" aria-labelledby="m12-title" style="width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; background: #FFFFFF; font-family: Barlow, sans-serif; color: #1A1F24; font-size: 15px">
+  <header style="height: 56px; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; gap: 4px; padding: 0 12px 0 4px; background: #FFFFFF; border-bottom: 1px solid #D6DBD8">
+    <a href="M11-OrderDetail.dc.html" aria-label="Đóng" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+    <h1 id="m12-title" style="margin: 0; flex-grow: 1; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 20px">Giao hàng · S04512</h1>
+  </header>
+
+  <sc-if value="{{ isForm }}" hint-placeholder-val="{{ true }}">
+    <main style="flex-grow: 1; min-height: 0; overflow: auto; box-sizing: border-box; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 14px; background: #EEF0EE">
+      <p style="margin: 0; font-size: 14px; color: #4E5A55">Vũ Thị Lệ Phương · kho 23CTO/Stock</p>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #FFFFFF; border: 1px solid #D6DBD8; border-radius: 14px">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px">
+          <span style="font-size: 13px; color: #4E5A55">Phiếu xuất kho · 2 dòng</span>
+          <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 18px">WH/OUT/01234</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 8px; border-radius: 8px; background: #E1F0E6; color: #17663F; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 14px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Đã giữ hàng</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #D6DBD8; border-radius: 14px">
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-bottom: 1px solid #D6DBD8">
+          <div style="display: flex; align-items: baseline; gap: 10px">
+            <span style="flex-grow: 1; font-size: 16px; font-weight: 500">Sony Alpha A7 IV (Body)</span>
+            <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 16px">SL 1</span>
+          </div>
+          <label for="m12-sn1" style="font-size: 13px; font-weight: 600; color: #4E5A55">Serial giao · SP006401</label>
+          <div style="display: flex; gap: 8px">
+            <input id="m12-sn1" type="text" value="S01-5521A7IV" readonly style="flex-grow: 1; min-width: 0; height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #9AA5A0; border-radius: 10px; background: #FFFFFF; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 17px; font-weight: 600; color: #1A1F24">
+            <button type="button" aria-label="Đổi serial" style="width: 48px; height: 48px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #9AA5A0; border-radius: 10px; background: #FFFFFF; color: #1A1F24; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13.5 6.5l4 4"></path></svg></button>
+          </div>
+          <span style="font-size: 13px; color: #4E5A55">Điền sẵn theo serial đã bán.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px">
+          <div style="display: flex; align-items: baseline; gap: 10px">
+            <span style="flex-grow: 1; font-size: 16px; font-weight: 500">Tamron 28-75mm F2.8 Di III VXD G2 for Sony E</span>
+            <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 16px">SL 1</span>
+          </div>
+          <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 14px; font-weight: 500; color: #66716C">SP005920 · không quản lý serial</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; padding: 12px 14px; background: #FFFFFF; border: 1px solid #D6DBD8; border-left: 3px solid #35607F; border-radius: 10px; font-size: 14px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#35607F" stroke-width="1.75" stroke-linecap="round" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg>
+        <span>Hóa đơn sẽ hạch toán theo ngày giao khi đã thu đủ. Đơn còn phải thu <strong style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif">64.480.000 ₫</strong> nên hóa đơn vẫn nháp sau khi giao.</span>
+      </div>
+    </main>
+    <div style="flex-shrink: 0; display: flex; gap: 8px; padding: 12px 16px; background: #FFFFFF; border-top: 1px solid #D6DBD8">
+      <a href="M11-OrderDetail.dc.html" style="flex: 1 1 0; height: 52px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #9AA5A0; border-radius: 10px; font-size: 16px; font-weight: 600">Huỷ</a>
+      <button type="button" onClick="{{ confirm }}" style="flex: 2 1 0; height: 52px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 10px; background: #F0A500; color: #1A1F24; font-family: Barlow, sans-serif; font-size: 16px; font-weight: 700; cursor: pointer">Xác nhận giao hàng</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isPosted }}" hint-placeholder-val="{{ false }}">
+    <main style="flex-grow: 1; min-height: 0; overflow: auto; box-sizing: border-box; padding: 40px 16px 16px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center">
+      <span style="width: 72px; height: 72px; border-radius: 50%; background: #E1F0E6; color: #17663F; display: inline-flex; align-items: center; justify-content: center"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+      <h2 style="margin: 0; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 24px; line-height: 1.2">Đã giao và hạch toán hóa đơn INV/2026/00871 ngày 26/09/2026</h2>
+      <div style="align-self: stretch; display: flex; flex-direction: column; border: 1px solid #D6DBD8; border-radius: 14px; text-align: left">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid #D6DBD8"><span style="color: #4E5A55">Phiếu xuất</span><span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 16px">WH/OUT/01234</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid #D6DBD8"><span style="color: #4E5A55">Hóa đơn</span><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 8px; background: #E1F0E6; color: #17663F; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 14px">Đã hạch toán</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px"><span style="color: #4E5A55">Serial đã giao</span><span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 16px">S01-5521A7IV</span></div>
+      </div>
+    </main>
+    <div style="flex-shrink: 0; display: flex; gap: 8px; padding: 12px 16px; background: #FFFFFF; border-top: 1px solid #D6DBD8">
+      <button type="button" style="flex: 1 1 0; height: 52px; border: 1px solid #9AA5A0; border-radius: 10px; background: #FFFFFF; color: #1A1F24; font-family: Barlow, sans-serif; font-size: 16px; font-weight: 600; cursor: pointer">In phiếu giao</button>
+      <a href="M11-OrderDetail.dc.html" style="flex: 1.3 1 0; height: 52px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: #F0A500; color: #1A1F24; font-size: 16px; font-weight: 700">Về chi tiết đơn</a>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isAwaiting }}" hint-placeholder-val="{{ false }}">
+    <main style="flex-grow: 1; min-height: 0; overflow: auto; box-sizing: border-box; padding: 40px 16px 16px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center">
+      <span style="width: 72px; height: 72px; border-radius: 50%; background: #FCEFCF; color: #7A4B00; display: inline-flex; align-items: center; justify-content: center"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3z"></path><path d="M14 10h4l3 3v3h-7"></path><circle cx="7" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle></svg></span>
+      <h2 style="margin: 0; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 24px; line-height: 1.2">Đã giao, còn thu 64.480.000 ₫ — hóa đơn vẫn nháp</h2>
+      <p style="margin: 0; font-size: 15px; color: #4E5A55">Khi thu đủ, hóa đơn sẽ tự hạch toán theo ngày giao 26/09/2026.</p>
+      <div style="align-self: stretch; display: flex; flex-direction: column; border: 1px solid #D6DBD8; border-radius: 14px; text-align: left">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid #D6DBD8"><span style="color: #4E5A55">Phiếu xuất</span><span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 16px">WH/OUT/01234</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid #D6DBD8"><span style="color: #4E5A55">Hóa đơn</span><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 8px; background: #FCEFCF; color: #7A4B00; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 14px">Hóa đơn nháp</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 12px 14px"><span style="font-weight: 600">Còn phải thu</span><span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 22px; color: #8A5A00">64.480.000 ₫</span></div>
+      </div>
+    </main>
+    <div style="flex-shrink: 0; display: flex; gap: 8px; padding: 12px 16px; background: #FFFFFF; border-top: 1px solid #D6DBD8">
+      <a href="M11-OrderDetail.dc.html" style="flex: 1 1 0; height: 52px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #9AA5A0; border-radius: 10px; font-size: 16px; font-weight: 600">Để sau</a>
+      <a href="M08-Payment.dc.html" style="flex: 1.6 1 0; height: 52px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: #F0A500; color: #1A1F24; font-size: 16px; font-weight: 700">Thu tiền</a>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844},"result":{"editor":"enum","options":["form","posted","awaiting"],"default":"form"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const r = (this.state && this.state.result) || this.props.result || 'form';
+    return {
+      isForm: r === 'form', isPosted: r === 'posted', isAwaiting: r === 'awaiting',
+      confirm: () => this.setState({ result: 'awaiting' })
+    };
+  }
+}
+</script>
+</body>
+</html>

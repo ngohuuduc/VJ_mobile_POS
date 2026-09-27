@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Giỏ hàng và Numpad · Máy tính</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Semi+Condensed:wght@500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#EEF0EE;font-family:"Barlow","Segoe UI",sans-serif;color:#1A1F24}
+a{color:#1A1F24;text-decoration:none}a:hover{color:#8A5A00}
+button,input,select{font:inherit;color:inherit}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; overflow: hidden; box-sizing: border-box; background: #FFFFFF; font-family: Barlow, sans-serif; color: #1A1F24; display: flex; flex-direction: column">
+  <header style="height: 56px; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 0 16px 0 8px; background: #FFFFFF; border-bottom: 1px solid #D6DBD8">
+    <button type="button" aria-label="Thu gọn menu" style="width: 44px; height: 44px; border: 0; padding: 0; background: transparent; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #1A1F24; cursor: pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+    <img src="/_blob/ca4bc8854f059ad7465e93434a0ee522" alt="VJShop.vn" style="height: 24px; width: auto">
+    <span style="flex-grow: 1"></span>
+    <button type="button" aria-label="Kho đang bán: 23CTO/Stock. Đổi kho" style="height: 36px; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid #9AA5A0; border-radius: 8px; background: #FFFFFF; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 15px; color: #1A1F24; cursor: pointer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-6 9 6v10H3z"></path><path d="M8 20v-6h8v6"></path></svg>
+      23CTO/Stock
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+    </button>
+    <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: #17663F"><span style="width: 8px; height: 8px; border-radius: 50%; background: #17663F"></span>Online</span>
+    <span role="img" aria-label="Nguyễn Thị Hường" style="width: 36px; height: 36px; border-radius: 50%; background: #1A1F24; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-weight: 600">H</span>
+  </header>
+  <div style="flex-grow: 1; min-height: 0; display: flex">
+    <nav aria-label="Điều hướng chính" style="width: 220px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #D6DBD8; display: flex; flex-direction: column; padding: 12px 0 16px">
+      <div style="padding: 6px 16px; font-size: 13px; color: #66716C">Bán hàng</div>
+      <a href="D03-OrderNew.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 16px 0 13px; border-left: 3px solid #1A1F24; background: #EEF0EE; font-size: 15px; font-weight: 600; color: #1A1F24"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M12 8v8M8 12h8"></path></svg>Tạo đơn hàng</a>
+      <a href="D10-Orders.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 16px 0 13px; border-left: 3px solid transparent; font-size: 15px; font-weight: 500; color: #4E5A55"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6M9 12h6"></path></svg>Đơn hàng</a>
+      <a href="D17-Inventory.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 16px 0 13px; border-left: 3px solid transparent; font-size: 15px; font-weight: 500; color: #4E5A55"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"></path><path d="M3 7l9 4 9-4M12 11v10"></path></svg>Kiểm tra tồn kho</a>
+      <a href="D16-Backorder.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 16px 0 13px; border-left: 3px solid transparent; font-size: 15px; font-weight: 500; color: #4E5A55"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Backorder &amp; Nháp</a>
+      <a href="D15-Deposit.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 16px 0 13px; border-left: 3px solid transparent; font-size: 15px; font-weight: 500; color: #4E5A55"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M16 13h2M3 10h18"></path></svg>Thu cọc trước</a>
+      <div style="padding: 18px 16px 6px; font-size: 13px; color: #66716C">Quản trị</div>
+      <a href="D19-Users.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 16px 0 13px; border-left: 3px solid transparent; font-size: 15px; font-weight: 500; color: #4E5A55"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.5 2.4 3.5 5.5"></path></svg>Quản lý User</a>
+      <a href="D21-Templates.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 16px 0 13px; border-left: 3px solid transparent; font-size: 15px; font-weight: 500; color: #4E5A55"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"></path><path d="M14 3v5h5"></path></svg>Quản lý Template</a>
+      <a href="D22-Cache.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 16px 0 13px; border-left: 3px solid transparent; font-size: 15px; font-weight: 500; color: #4E5A55"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"></path></svg>Cache Management</a>
+      <a href="D23-PaymentMethods.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 16px 0 13px; border-left: 3px solid transparent; font-size: 15px; font-weight: 500; color: #4E5A55"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 10h18M7 15h4"></path></svg>Phương thức thanh toán</a>
+      <div style="height: 1px; background: #D6DBD8; margin: 12px 16px"></div>
+      <a href="D18-Settings.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 16px 0 13px; border-left: 3px solid transparent; font-size: 15px; font-weight: 500; color: #4E5A55"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path></svg>Cài đặt</a>
+      <span style="flex-grow: 1"></span>
+      <span style="padding: 0 16px; font-size: 13px; color: #66716C">VJShop POS v0.0.1</span>
+    </nav>
+    <main style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; position: relative">
+      <div style="flex-shrink: 0; padding: 16px 20px 12px; display: flex; flex-direction: column; gap: 12px">
+        <label style="display: flex; align-items: center; gap: 8px; height: 44px; box-sizing: border-box; padding: 0 8px 0 12px; border: 1px solid #9AA5A0; border-radius: 10px; background: #EEF0EE; color: #4E5A55">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+          <input type="search" aria-label="Tìm sản phẩm" aria-keyshortcuts="F2" placeholder="Tìm SKU / Tên SP / Quét mã vạch..." style="flex-grow: 1; min-width: 0; height: 42px; border: 0; padding: 0; background: transparent; outline: none; font-size: 16px; color: #1A1F24">
+          <span aria-hidden="true" style="font-size: 12px; font-weight: 600; color: #4E5A55; padding: 1px 6px; border: 1px solid #9AA5A0; border-radius: 4px; background: #FFFFFF">F2</span>
+        </label>
+        <div role="toolbar" aria-label="Lọc theo hãng" style="display: flex; gap: 8px; flex-wrap: wrap">
+          <button type="button" aria-pressed="true" style="height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #1A1F24; background: #1A1F24; color: #FFFFFF; font-size: 14px; font-weight: 600">Tất cả</button>
+          <button type="button" aria-pressed="false" style="height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9AA5A0; background: #FFFFFF; color: #1A1F24; font-size: 14px; font-weight: 500">DJI</button>
+          <button type="button" aria-pressed="false" style="height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9AA5A0; background: #FFFFFF; color: #1A1F24; font-size: 14px; font-weight: 500">Sony</button>
+          <button type="button" aria-pressed="false" style="height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9AA5A0; background: #FFFFFF; color: #1A1F24; font-size: 14px; font-weight: 500">Fujifilm</button>
+          <button type="button" aria-pressed="false" style="height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9AA5A0; background: #FFFFFF; color: #1A1F24; font-size: 14px; font-weight: 500">Tamron</button>
+          <button type="button" aria-pressed="false" style="height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9AA5A0; background: #FFFFFF; color: #1A1F24; font-size: 14px; font-weight: 500">Canon</button>
+          <button type="button" aria-pressed="false" style="height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9AA5A0; background: #FFFFFF; color: #1A1F24; font-size: 14px; font-weight: 500">K&amp;F Concept</button>
+          <button type="button" aria-pressed="false" style="height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9AA5A0; background: #FFFFFF; color: #1A1F24; font-size: 14px; font-weight: 500">Sigma</button>
+          <button type="button" aria-pressed="false" style="height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9AA5A0; background: #FFFFFF; color: #1A1F24; font-size: 14px; font-weight: 500">Khác</button>
+        </div>
+      </div>
+      <div role="row" style="flex-shrink: 0; display: flex; align-items: center; gap: 16px; height: 36px; padding: 0 20px; border-top: 1px solid #D6DBD8; border-bottom: 1px solid #D6DBD8; font-size: 13px; font-weight: 600; color: #66716C">
+        <span style="flex-grow: 1">Sản phẩm</span>
+        <span style="width: 90px">SKU</span>
+        <span style="width: 96px">Tồn kho</span>
+        <span style="width: 124px; text-align: right">Giá</span>
+      </div>
+      <div id="catalog" role="list" aria-label="Sản phẩm" style="flex-grow: 1; min-height: 0; overflow: hidden">
+        <sc-for list="{{ products }}" as="p" hint-placeholder-count="8">
+          <a role="listitem" href="{{ p.href }}" style="display: flex; align-items: center; gap: 16px; min-height: 56px; padding: 0 20px; box-sizing: border-box; border-bottom: 1px solid #D6DBD8; color: #1A1F24">
+            <span style="flex-grow: 1; min-width: 0; font-size: 16px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ p.n }}</span>
+            <span style="width: 90px; flex-shrink: 0; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 15px; font-weight: 500; color: #66716C">{{ p.sku }}</span>
+            <span style="width: 96px; flex-shrink: 0; display: flex">
+              <sc-if value="{{ p.ok }}" hint-placeholder-val="{{ true }}"><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 8px; background: #E1F0E6; color: #17663F; font-size: 13px; font-weight: 600">{{ p.st }}</span></sc-if>
+              <sc-if value="{{ p.warn }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 8px; background: #FCEFCF; color: #7A4B00; font-size: 13px; font-weight: 600">{{ p.st }}</span></sc-if>
+              <sc-if value="{{ p.bad }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 7px; border-radius: 8px; border: 1px solid #A1231B; background: #FFFFFF; color: #A1231B; font-size: 13px; font-weight: 600">{{ p.st }}</span></sc-if>
+            </span>
+            <span style="width: 124px; flex-shrink: 0; text-align: right; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 17px; white-space: nowrap">{{ p.p }}</span>
+          </a>
+        </sc-for>
+      </div>
+      <sc-if value="{{ toast }}" hint-placeholder-val="{{ true }}">
+        <div role="status" style="position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; height: 52px; box-sizing: border-box; padding: 0 6px 0 18px; border-radius: 10px; background: #1A1F24; color: #F2F4F2; box-shadow: 0 10px 28px rgba(26,31,36,.16); font-size: 15px; white-space: nowrap">
+          <span>Đã xoá 1 dòng</span>
+          <span aria-hidden="true" style="color: #A9B3AE">·</span>
+          <button type="button" onClick="{{ undo }}" aria-keyshortcuts="Control+Z" style="height: 44px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: #F2F4F2; font-size: 15px; font-weight: 700; text-decoration: underline; cursor: pointer">Hoàn tác</button>
+          <span aria-hidden="true" style="font-size: 12px; font-weight: 600; color: #A9B3AE; padding: 1px 6px; border: 1px solid #4E5A55; border-radius: 4px; margin-right: 8px">Ctrl Z</span>
+        </div>
+      </sc-if>
+    </main>
+    <aside aria-label="Giỏ hàng" style="width: 400px; flex-shrink: 0; box-sizing: border-box; background: #FFFFFF; border-left: 1px solid #D6DBD8; display: flex; flex-direction: column; min-height: 0">
+      <div style="height: 52px; flex-shrink: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; padding: 0 16px 0 20px; border-bottom: 1px solid #D6DBD8">
+        <h2 style="margin: 0; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 20px; font-weight: 700">Giỏ hàng · {{ count }} món</h2>
+        <span style="font-size: 13px; color: #66716C">Đơn mới · 14:05</span>
+      </div>
+      <div style="flex-shrink: 0; padding: 14px 20px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #D6DBD8">
+        <div style="display: flex; gap: 8px">
+          <a href="D06-CustomerPick.dc.html" aria-label="Khách hàng: Vũ Thị Lệ Phương. Đổi khách" aria-keyshortcuts="F3" style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 10px; height: 52px; box-sizing: border-box; padding: 0 10px 0 12px; border: 1px solid #9AA5A0; border-radius: 10px; color: #1A1F24">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4E5A55" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+            <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column">
+              <span style="font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Vũ Thị Lệ Phương</span>
+              <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 14px; color: #4E5A55">0350 978 833</span>
+            </span>
+            <span aria-hidden="true" style="font-size: 12px; font-weight: 600; color: #4E5A55; padding: 1px 6px; border: 1px solid #9AA5A0; border-radius: 4px">F3</span>
+          </a>
+          <a href="D07-CustomerProfile.dc.html" aria-label="Xem 6 khuyến mãi của khách" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; height: 52px; box-sizing: border-box; padding: 0 12px; border: 1px solid #9AA5A0; border-radius: 10px; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 16px; font-weight: 600; color: #8A5A00">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"></path><circle cx="7.5" cy="8.5" r="1.5"></circle></svg>
+            6 KM
+          </a>
+        </div>
+        <label style="display: flex; align-items: center; gap: 12px">
+          <span style="width: 52px; flex-shrink: 0; font-size: 14px; color: #4E5A55">Nguồn</span>
+          <select style="flex-grow: 1; min-width: 0; height: 44px; box-sizing: border-box; padding: 0 10px; border: 1px solid #9AA5A0; border-radius: 10px; background: #EEF0EE; font-size: 15px; color: #1A1F24">
+            <option>Tại cửa hàng</option>
+            <option>Facebook</option>
+            <option>Zalo</option>
+            <option>Website</option>
+          </select>
+        </label>
+      </div>
+      <div style="flex-grow: 1; min-height: 0; overflow: hidden">
+        <div style="padding: 12px 20px; border-bottom: 1px solid #D6DBD8; display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; gap: 8px; align-items: flex-start">
+            <div style="flex-grow: 1; min-width: 0">
+              <div style="font-size: 15px; font-weight: 500; line-height: 1.3">Sony Alpha A7 IV (Body)</div>
+              <div style="font-size: 13px; color: #4E5A55; margin-top: 2px">Serial: <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 14px; font-weight: 600; color: #1A1F24">S01-5521A7IV</span></div>
+            </div>
+            <button type="button" aria-label="Xoá dòng Sony Alpha A7 IV (Body)" style="width: 44px; height: 44px; flex-shrink: 0; margin: -8px -10px 0 0; border: 0; padding: 0; background: transparent; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #4E5A55; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14M9 7V5h6v2M7 7l1 12h8l1-12"></path></svg></button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px">
+            <div style="display: inline-flex; align-items: center; height: 44px; box-sizing: border-box; border: 1px solid #9AA5A0; border-radius: 10px; overflow: hidden">
+              <button type="button" aria-label="Giảm số lượng" style="width: 44px; height: 42px; border: 0; padding: 0; background: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"></path></svg></button>
+              <span aria-label="Số lượng" style="min-width: 28px; text-align: center; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 17px">1</span>
+              <button type="button" aria-label="Tăng số lượng" style="width: 44px; height: 42px; border: 0; padding: 0; background: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"></path></svg></button>
+            </div>
+            <span style="color: #66716C">×</span>
+            <button type="button" aria-label="Sửa đơn giá, 52.990.000 ₫" style="height: 44px; border: 0; padding: 0 2px; background: transparent; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 15px; color: #1A1F24; cursor: pointer"><span style="border-bottom: 1px dashed #4E5A55">52.990.000 ₫</span></button>
+            <span style="margin-left: auto; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 17px; white-space: nowrap">52.990.000 ₫</span>
+          </div>
+        </div>
+        <div aria-current="true" style="padding: 12px 20px; border-bottom: 1px solid #D6DBD8; display: flex; flex-direction: column; gap: 6px; background: #EEF0EE; box-shadow: inset 3px 0 0 #1A1F24">
+          <div style="display: flex; gap: 8px; align-items: flex-start">
+            <div style="flex-grow: 1; min-width: 0">
+              <div style="font-size: 15px; font-weight: 500; line-height: 1.3">DJI Osmo Pocket 3 Creator Combo</div>
+              <div style="font-size: 13px; color: #4E5A55; margin-top: 2px"><span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-size: 14px">SP006312</span>
+                <sc-if value="{{ hasPct }}" hint-placeholder-val="{{ false }}"><span style="color: #8A5A00; font-weight: 600"> · Giảm {{ pct }}%</span></sc-if>
+              </div>
+            </div>
+            <button type="button" aria-label="Xoá dòng DJI Osmo Pocket 3 Creator Combo" style="width: 44px; height: 44px; flex-shrink: 0; margin: -8px -10px 0 0; border: 0; padding: 0; background: transparent; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #4E5A55; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14M9 7V5h6v2M7 7l1 12h8l1-12"></path></svg></button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px">
+            <div style="display: inline-flex; align-items: center; height: 44px; box-sizing: border-box; border: 1px solid #9AA5A0; border-radius: 10px; overflow: hidden; background: #FFFFFF; box-shadow: {{ qtyRing }}">
+              <button type="button" aria-label="Giảm số lượng" style="width: 44px; height: 42px; border: 0; padding: 0; background: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"></path></svg></button>
+              <span aria-label="Số lượng" style="min-width: 28px; text-align: center; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 17px">{{ qty }}</span>
+              <button type="button" aria-label="Tăng số lượng" style="width: 44px; height: 42px; border: 0; padding: 0; background: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"></path></svg></button>
+            </div>
+            <span style="color: #66716C">×</span>
+            <button type="button" aria-label="Sửa đơn giá" style="height: 36px; border: 0; padding: 0 6px; border-radius: 8px; background: #FFFFFF; box-shadow: {{ priceRing }}; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 15px; color: #1A1F24; cursor: pointer"><span style="border-bottom: 1px dashed #4E5A55">{{ price }}</span></button>
+            <span style="margin-left: auto; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 17px; white-space: nowrap">{{ lineTotal }}</span>
+          </div>
+        </div>
+      </div>
+      <div style="flex-shrink: 0; border-top: 1px solid #D6DBD8; padding: 12px 20px 20px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline">
+          <span style="font-size: 15px; color: #4E5A55">Tổng cộng, {{ count }} món</span>
+          <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 32px">{{ total }}</span>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center">
+          <div aria-live="polite" style="flex-grow: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 44px; box-sizing: border-box; padding: 0 12px; border: 2px solid #1A1F24; border-radius: 10px">
+            <span style="font-size: 13px; color: #4E5A55; white-space: nowrap">{{ modeLabel }}</span>
+            <span style="font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 700; font-size: 20px; white-space: nowrap">{{ display }}</span>
+          </div>
+          <a href="D03-OrderNew.dc.html" role="switch" aria-checked="true" style="height: 44px; flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #1A1F24">
+            Numpad
+            <span style="width: 40px; height: 24px; box-sizing: border-box; border-radius: 12px; background: #1A1F24; display: inline-flex; align-items: center; justify-content: flex-end; padding: 0 3px"><span style="width: 18px; height: 18px; border-radius: 50%; background: #FFFFFF"></span></span>
+          </a>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <div style="flex-grow: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+            <sc-for list="{{ keys }}" as="k" hint-placeholder-count="12">
+              <button type="button" onClick="{{ k.press }}" aria-label="{{ k.aria }}" style="height: 48px; border: 1px solid #D6DBD8; border-radius: 10px; background: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-family: 'Barlow Semi Condensed', Barlow, sans-serif; font-weight: 600; font-size: 21px; color: #1A1F24; cursor: pointer">
+                <sc-if value="{{ k.digit }}" hint-placeholder-val="{{ true }}">{{ k.label }}</sc-if>
+                <sc-if value="{{ k.bs }}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 5H9l-6 7 6 7h12z"></path><path d="M12 9l5 6M17 9l-5 6"></path></svg></sc-if>
+              </button>
+            </sc-for>
+          </div>
+          <div role="radiogroup" aria-label="Chế độ nhập" style="width: 72px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px">
+            <sc-for list="{{ modes }}" as="m" hint-placeholder-count="3">
+              <sc-if value="{{ m.sel }}" hint-placeholder-val="{{ false }}">
+                <button type="button" role="radio" aria-checked="true" onClick="{{ m.pick }}" style="flex-grow: 1; border: 1px solid #1A1F24; border-radius: 10px; background: #1A1F24; color: #FFFFFF; font-size: 16px; font-weight: 700; cursor: pointer">{{ m.label }}</button>
+              </sc-if>
+              <sc-if value="{{ m.off }}" hint-placeholder-val="{{ true }}">
+                <button type="button" role="radio" aria-checked="false" onClick="{{ m.pick }}" style="flex-grow: 1; border: 1px solid #9AA5A0; border-radius: 10px; background: #FFFFFF; color: #1A1F24; font-size: 16px; font-weight: 600; cursor: pointer">{{ m.label }}</button>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <a href="D16-Backorder.dc.html" aria-keyshortcuts="F8" style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; border: 1px solid #9AA5A0; border-radius: 10px; font-size: 16px; font-weight: 600">Lưu nháp<span aria-hidden="true" style="font-size: 12px; font-weight: 600; color: #4E5A55; padding: 1px 6px; border: 1px solid #9AA5A0; border-radius: 4px">F8</span></a>
+          <a href="D08-Payment.dc.html" aria-keyshortcuts="F9" style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; border-radius: 10px; background: #F0A500; color: #1A1F24; font-size: 16px; font-weight: 700">Xác nhận<span aria-hidden="true" style="font-size: 12px; font-weight: 600; padding: 1px 6px; border: 1px solid rgba(26,31,36,.4); border-radius: 4px">F9</span></a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = [
+      { n: 'Sony Alpha A7 IV (Body)', sku: 'SP006401', st: 'Còn 4', k: 'ok', p: '52.990.000 ₫', serial: true },
+      { n: 'DJI Osmo Pocket 3 Creator Combo', sku: 'SP006312', st: 'Còn 12', k: 'ok', p: '14.490.000 ₫' },
+      { n: 'Fujifilm X-T5 Kit XF 16-80mm', sku: 'SP006118', st: 'Còn 2', k: 'warn', p: '51.990.000 ₫' },
+      { n: 'Tamron 28-75mm F2.8 Di III VXD G2 for Sony E', sku: 'SP005920', st: 'Còn 7', k: 'ok', p: '21.490.000 ₫' },
+      { n: 'Canon EOS R6 Mark II (Body)', sku: 'SP006050', st: 'Đặt trước', k: 'bad', p: '55.990.000 ₫' },
+      { n: 'Sigma 24-70mm F2.8 DG DN II Art', sku: 'SP006233', st: 'Còn 3', k: 'ok', p: '28.990.000 ₫' },
+      { n: 'K&F Concept Nano-X Black Mist 1/4 67mm', sku: 'SP004410', st: 'Còn 25', k: 'ok', p: '690.000 ₫' },
+      { n: 'Aputure LS 600d Pro (V-mount)', sku: 'SP006222', st: 'Đặt trước', k: 'bad', p: '48.890.000 ₫' }
+    ];
+    const st = Object.assign({ mode: 'price', qty: '1', price: '14490000', pct: '0', toast: true }, this.state || {});
+    const fmt = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const max = { qty: 3, price: 10, pct: 2 };
+    const press = (k) => () => {
+      let b = st[st.mode] === '0' ? '' : st[st.mode];
+      b = k === 'bs' ? b.slice(0, -1) : (b + k).slice(0, max[st.mode]);
+      b = b.replace(/^0+(?=\d)/, '') || '0';
+      this.setState({ [st.mode]: b });
+    };
+    const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '000', '0', 'bs'].map((k) => ({
+      label: k, bs: k === 'bs', digit: k !== 'bs', aria: k === 'bs' ? 'Xoá một chữ số' : k, press: press(k)
+    }));
+    const modes = [{ id: 'qty', label: 'SL' }, { id: 'price', label: 'Giá' }, { id: 'pct', label: '%' }].map((m) => ({
+      label: m.label, sel: st.mode === m.id, off: st.mode !== m.id, pick: () => this.setState({ mode: m.id })
+    }));
+    const qty = Number(st.qty) || 0;
+    const price = Number(st.price) || 0;
+    const pct = Math.min(Number(st.pct) || 0, 100);
+    const line = qty * price * (1 - pct / 100);
+    const ring = '0 0 0 2px #1A1F24';
+    return {
+      products: P.map((p) => Object.assign({}, p, {
+        ok: p.k === 'ok', warn: p.k === 'warn', bad: p.k === 'bad',
+        href: p.serial ? 'D05-Serial.dc.html' : '#catalog'
+      })),
+      toast: st.toast,
+      undo: () => this.setState({ toast: false }),
+      keys, modes,
+      qty: String(qty),
+      price: fmt(price) + ' ₫',
+      pct: String(pct),
+      hasPct: pct > 0,
+      lineTotal: fmt(line) + ' ₫',
+      total: fmt(52990000 + line) + ' ₫',
+      count: String(1 + qty),
+      qtyRing: st.mode === 'qty' ? ring : 'none',
+      priceRing: st.mode === 'price' ? ring : 'none',
+      modeLabel: st.mode === 'price' ? 'Đơn giá' : st.mode === 'pct' ? 'Chiết khấu' : 'Số lượng',
+      display: st.mode === 'price' ? fmt(price) + ' ₫' : st.mode === 'pct' ? pct + '%' : String(qty)
+    };
+  }
+}
+</script>
+</body>
+</html>
