@@ -1,8 +1,8 @@
 # VJ Mobile POS — Process Flow
 
 > Trạng thái: Draft  
-> Cập nhật: 2026-04-22  
-> Phiên bản: 1.0 — Link to staging issue_log
+> Cập nhật: 2026-09-28  
+> Phiên bản: 1.1 — Giao hàng + hóa đơn theo ngày giao, đổi ngày hẹn, chuyển cọc, thu ngân / hoa hồng, Profile KH (GH #2/#3/#5/#7/#9/#10/#20/#22)
 
 Chỉ bao gồm các luồng đã xác định đủ nội dung.  
 Các câu hỏi còn mở xem tại [open_questions.md](../planning/open_questions.md).
@@ -13,13 +13,20 @@ Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) ch
 
 | Flow | Thay đổi | Issue |
 |---|---|---|
-| A1 — Tạo đơn | Confirm → auto create + post invoice → auto lock (state=done). Cho phép xác nhận với partial/zero payment (đặt cọc). **3 lane song song sau bước B**: chọn KH / chọn NV hoa hồng / tìm SP. Bước E split 4 nhánh theo combo `serial × tồn kho`. | #12, #30, #52 |
-| A2 — Thanh toán | Record qua wizard `account.payment.register` → auto reconcile với invoice (canonical Odoo flow). Cho phép thu thêm nhiều lần qua OrderDetailPage. **Bắt buộc KH trước confirm** — BE reject `confirm=true` không có customer_id (400 CUSTOMER_REQUIRED). | #16, #28, #39, #102 |
+| A1 — Tạo đơn (2026-09) | Confirm → tạo hóa đơn **nháp**, **không** khóa đơn (`INVOICE_POST_MODE=on_delivery`). Serial chỉ chọn từ lot có sẵn. Tên thu ngân tự ghi vào `sale.order.origin`; NV hoa hồng do thu ngân chọn. Xác nhận + thanh toán xong → chuyển thẳng tới **chi tiết đơn** kèm banner thành công hiện một lần (bỏ màn / dialog thành công). | GH #2, #7, #9, #20 |
+| A1 — Tạo đơn (cũ) | ~~Confirm → auto create + post invoice → auto lock (state=done).~~ Chỉ còn khi `INVOICE_POST_MODE=on_confirm`. Cho phép xác nhận với partial/zero payment (đặt cọc). **3 lane song song sau bước B**: chọn KH / chọn NV hoa hồng / tìm SP. Bước E split 4 nhánh theo combo `serial × tồn kho`. | #12, #30, #52 |
+| A2 — Thanh toán (2026-09) | Hóa đơn còn nháp → khoản thu ghi thành `account.payment` độc lập, gắn với đơn trong bảng `order_payment_links`, đối soát khi hóa đơn vào sổ (A9). Nút "Thu cọc" đổi tên thành **"Thu tiền"**. | GH #2, #7 |
+| A2 — Thanh toán | Record qua wizard `account.payment.register` → auto reconcile với invoice (canonical Odoo flow) — khi hóa đơn đã vào sổ. Cho phép thu thêm nhiều lần qua OrderDetailPage. **Bắt buộc KH trước confirm** — BE reject `confirm=true` không có customer_id (400 CUSTOMER_REQUIRED). | #16, #28, #39, #102 |
 | A5 — Hủy đơn | **REMOVED khỏi POS UI.** Toàn bộ cancellation đi Odoo sale.order → Cancel button. | #51 |
 | A6 — Đổi location | Re-fetch products + inventory khi LocationBadge đổi location. Warehouse auto-resolve từ location. | #1, #2, #38 |
 | A7 — Tạo KH | Form thêm DOB; 3 field (name/phone/email) bắt buộc, email optional sau staging (#85); MST auto-fill qua VietQR lookup. | #3, #48, #49, #85 |
 | B4 — Reset Password | LoginPage thêm link **"Quên mật khẩu?"** (user tự reset) → `POST /auth/forgot-password`. | #110 |
-| Commission | **Refactor in progress (#104)**: tách 2 field — (a) field mới (TBD) auto-write `cashier = pos_user.hr_employee_id`, (b) `commission_employee` cho user pick từ dropdown `hr.employee`. Đợi Odoo module ship field mới. | #9, #104 |
+| Commission | **Đã xong 2026-09-27** (không chờ module Odoo): (a) tên thu ngân ghi text vào `sale.order.origin`, (b) `commission_employee` do thu ngân chọn qua `GET /employees/search`, không bắt buộc, không tự điền. | #9, #104, GH #9 |
+| A9 — Giao hàng (mới) | Nút "Giao hàng" trên chi tiết đơn → validate phiếu giao → hóa đơn vào sổ nếu đã thu đủ (ngày hóa đơn = ngày giao). | GH #2, #7 |
+| A10 — Đổi ngày hẹn (mới) | Dời `scheduled_date` phiếu giao đang chờ + ghi note nội bộ. **Không động tới `mail.activity`.** | GH #3, #15, #20 |
+| A11 — Chuyển cọc (mới) | Đơn cũ hủy trên Odoo → "Chuyển cọc" → cọc thành công nợ có, trừ được vào đơn mới. Hoàn cọc làm trên Odoo. | GH #5, #15 |
+| A8 — Profile KH | Đã làm: coupon riêng (mã bị che), lọc theo công ty của kho đang bán, tag "Đủ điều kiện / Còn thiếu X ₫". | GH #10 |
+| B6 — MST | Nguồn mặc định escodata, VietQR dự phòng. | GH #20 |
 | Invoice journal | **Pending Odoo module (#103)**: thêm `stock.warehouse.sale_journal_id` → POS đọc khi tạo invoice + write `account.move.journal_id` trước `action_post`. Hiện tại fallback default → mọi đơn vào "11NPS - Bán Hàng" (sai). | #103 |
 
 ---
@@ -48,8 +55,11 @@ Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) ch
 | A4 | Quản lý Backorder | Theo dõi, validate, hủy backorder |
 | A5 | Hủy đơn hàng | Hủy theo trạng thái + phân quyền |
 | A6 | Xuất hoá đơn điện tử | Tạo nháp trên Misa + thông báo kế toán thuế |
-| A7 | Tạo / Cập nhật Khách hàng | Tìm / tạo / sửa `res.partner`, auto-fill MST qua VietQR, sync Odoo ngay |
+| A7 | Tạo / Cập nhật Khách hàng | Tìm / tạo / sửa `res.partner`, auto-fill MST (escodata, VietQR dự phòng), sync Odoo ngay |
 | A8 | Xem Profile Khách hàng | Mở bảng thông tin KH + chương trình khuyến mãi đang áp dụng (Odoo `coupon.program`) |
+| A9 | Giao hàng & vào sổ hóa đơn | Validate phiếu giao, hóa đơn vào sổ khi đã giao + thu đủ |
+| A10 | Đổi ngày hẹn lấy hàng | Dời ngày phiếu giao + ghi note nội bộ |
+| A11 | Chuyển cọc | Đổi SP: cọc của đơn đã hủy → công nợ có của khách |
 
 ### Phần B — Technical Flows (Kỹ thuật)
 
@@ -60,7 +70,7 @@ Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) ch
 | B3 | Quản lý User | Tạo user liên kết hr.employee, phân quyền |
 | B4 | Reset Password | Gửi email token qua AWS SES |
 | B5 | Kiểm tra tồn kho | Tra cứu stock.quant theo location |
-| B6 | Tra cứu MST | VietQR API + TTLCache |
+| B6 | Tra cứu MST | escodata (VietQR dự phòng) + cache Postgres |
 | B7 | In phiếu bán hàng | Generate PDF (A4/A5) từ template |
 | B8 | Tích hợp Misa (eInvoice) | Xác thực, tạo hoá đơn nháp, xử lý lỗi |
 | B9 | Tích hợp Đơn vị giao hàng / COD | Tạo vận đơn, nhận callback xác nhận thu tiền |
@@ -131,7 +141,7 @@ flowchart TD
 **Ghi chú:**
 - **3 lane song song sau B** (clarification 2026-05-19): cashier có thể xen kẽ tự do giữa (1) chọn/tạo KH, (2) chọn NV hưởng hoa hồng, (3) tìm + thêm SP. Không có thứ tự bắt buộc — UI hỗ trợ thao tác đồng thời cho đến khi user bấm "Xem lại đơn".
   - **Lane KH** — optional ở A1, **bắt buộc trước khi confirm/thanh toán** (rule A2 — issue #102 enforce). Entry: nút "Chọn khách hàng" trong cart panel. Sub-flow: A7.
-  - **Lane Comm** — optional luôn (per [#104](../planning/issue_log_staging_dev.md)). Dropdown chọn nhân viên hưởng hoa hồng từ `hr.employee` (≠ cashier auto-track). Nếu cashier không pick → BE để Odoo default; sau Odoo deploy field mới sẽ tách rõ "cashier vs commission". Đợi Odoo dev ship.
+  - **Lane Comm** — optional luôn (per [#104](../planning/issue_log_staging_dev.md), GH #9 — đã làm 2026-09-27). Ô chọn nhân viên hưởng hoa hồng (`CommissionEmployeePicker`, tìm qua `GET /employees/search`, không phân biệt dấu, lọc theo công ty của kho đang bán). Không chọn → `commission_employee` để trống, **không tự điền** thu ngân. Tên thu ngân luôn được ghi tự động dạng text vào `sale.order.origin` ("Tài liệu nguồn").
   - **Lane SP** — vòng lặp `C → D → E → F/G → H → C`. Đây là path bắt buộc (đơn phải có tối thiểu 1 dòng SP).
 - **Bước E split 4 nhánh theo combo `có-serial × có-tồn-kho`** (clarification 2026-05-18):
 
@@ -143,6 +153,9 @@ flowchart TD
 | Không | ✗ chưa | Thêm vào đơn với qty preorder, tên SP `** ...`, backorder | **G2** |
 
 - **Pattern `**` thống nhất** cho mọi dòng "đặt cọc / chờ nhập kho" (F2 và G2) — không phân biệt có serial hay không. Cashier nhìn vào tên SP `**` là biết dòng này sẽ backorder.
+- **Serial chỉ chọn, không nhập tay** (owner 2026-09-28, GH #20): dialog chọn serial chỉ liệt kê lot có sẵn trên Odoo; ô tìm chỉ lọc danh sách. Backend từ chối serial không tồn tại / của sản phẩm khác / không còn hàng tại kho bán (409 `SERIAL_NOT_FOUND` / `SERIAL_WRONG_PRODUCT` / `SERIAL_NOT_AVAILABLE`). Node F1 "chọn / nhập serial" nay chỉ còn **chọn**.
+- **Sau khi xác nhận + thanh toán** (2026-09-28): app chuyển thẳng tới chi tiết đơn `/orders/{id}` và hiện banner thành công **một lần** (mã đơn để đọc cho khách). Màn / dialog "thành công" riêng đã bỏ. Tải lại trang không hiện lại banner.
+- **Kho đang bán được nhớ** theo từng user (GH #17): lần sau đăng nhập vào thẳng kho đã dùng; chỉ hỏi chọn kho khi lần đầu hoặc kho cũ không còn được phép.
 - **Serial gán thực tế** ở luồng A3/A4: khi hàng về kho, cashier validate picking + chọn serial từ `stock.lot` mới nhập (cho F2). G2 không cần serial nên auto-validate.
 - **OQ-K03, OQ-Q04**: cho phép thêm SP hết hàng kèm cảnh báo (banner vàng); serial chọn ngay khi có tồn (F1), defer nếu không (F2, A4).
 
@@ -195,6 +208,9 @@ flowchart TD
 - Đơn cọc không hết hạn (OQ-O02)
 - Nhiều phương thức trong 1 đơn (OQ-C03)
 - **Phương thức** (giai đoạn 1): 3 option — Tiền mặt, Chuyển khoản/Thẻ, Thanh toán khác (disabled). VNPay/MoMo/VietQR Payment/COD chờ tích hợp API trong sprint sau.
+- **Cập nhật 2026-09 (GH #2/#7):** bước L–O trong sơ đồ là cách cũ (`on_confirm`). Mặc định hiện nay (`on_delivery`): hóa đơn đã được tạo **nháp** lúc xác nhận đơn; Odoo không ghi được thanh toán vào hóa đơn nháp, nên mỗi khoản thu là một `account.payment` độc lập (đã post) trên khách, gắn với đơn trong bảng `order_payment_links`. Kế toán **không** cần post hóa đơn tay: hóa đơn tự vào sổ khi đơn đã giao hết + thu đủ (A9).
+- **"Thu tiền"** (đổi tên từ "Thu cọc"): nút trên chi tiết đơn và màn `/customer-deposit` (thu trước không gắn đơn, `POST /customer-deposits`). Trên điện thoại vào qua **More → Thu tiền**.
+- Phương thức thanh toán hiện gán theo từng user; #26 (đang làm) sẽ đổi sang cấu hình theo cửa hàng.
 
 ---
 
@@ -224,6 +240,8 @@ flowchart TD
     L --> M[Invalidate stock_cache]:::system
     M --> N([Hoàn tất xuất kho]):::terminal
 ```
+
+> **Cập nhật 2026-09 (GH #2/#7/#20):** xuất kho không còn tự validate ngay khi xác nhận đơn. Phiếu giao được validate khi thu ngân bấm **"Giao hàng"** (luồng A9) hoặc làm trực tiếp trên Odoo. Serial ở bước K chỉ **chọn** từ lot có sẵn, không nhập tay.
 
 ---
 
@@ -384,7 +402,7 @@ flowchart TD
 - **Bắt buộc** (OQ-J02): `tên`, `số điện thoại`, `email`. MST + địa chỉ **tùy chọn**.
 - **Tìm kiếm** (OQ-J03): tên, SĐT, email, MST — BE handle logic.
 - **SĐT auto-format** (OQ-AF02): khi gõ `0901234567` → hiển thị `0901 234 567`. Regex VN: `^(0|\+84)(\d{9,10})$`.
-- **MST VietQR** (OQ-X01, B6): khi nhập MST và blur/submit → call VietQR API → auto-fill tên DN + địa chỉ. User có thể chỉnh sửa sau auto-fill.
+- **Tra MST** (OQ-X01, B6): khi nhập MST và blur/submit → `GET /customers/mst/{tax_code}` (escodata mặc định, VietQR dự phòng) → auto-fill tên DN + địa chỉ. User có thể chỉnh sửa sau auto-fill.
 - **Sync ngay** (OQ-X01): backend gọi `res.partner.create` / `write` qua JSON-RPC ngay khi bấm Lưu — không đợi batch. Cache `customer_cache` invalidate cho user hiện tại.
 - **Confirm dialog** (OQ-Q01): xác nhận trước khi tạo/lưu/cập nhật.
 - **Đính kèm vào cart**: nếu entry từ màn Tạo đơn (`/orders/new`), sau khi lưu thành công → `cart.setCustomer(...)` → đóng dialog → quay lại màn chính.
@@ -424,8 +442,89 @@ flowchart TD
 - **KM "đang áp dụng":** `program_type='promotion_program'` (KM tự động — khác `coupon_program` cần nhập mã) + `active=True` + `now ∈ [rule_date_from, rule_date_to]` + KH thỏa `rule_partners_domain`.
 - **`rule_partners_domain` là chuỗi domain** (không phải Many2one) → với mỗi chương trình active, kiểm tra KH có match không bằng `search_count("res.partner", eval(rule_partners_domain) + [("id","=",customer_id)]) > 0`.
 - **Read-only:** chỉ hiển thị để nhân viên tư vấn KH — **không** tự áp discount vào `sale.order` (áp discount vẫn ngoài phạm vi — B-03).
-- **Entry points:** nút "Xem Profile" trên cart panel (`CustomerButton`) / trong dialog chọn KH (A7) / màn chi tiết đơn.
+- **Entry points:** nút "Xem Profile" trên cart panel (`CustomerButton`) / trong dialog chọn KH (A7) / màn chi tiết đơn. Ngoài ra mục **"Khách hàng"** (điện thoại: More → Khách hàng; iPad: tab "Khách hàng"; máy tính: sidebar) mở ô tìm khách hàng để xem profile.
 - Chi tiết kỹ thuật + endpoint đề xuất: [issue #115](../planning/issue_log_staging_dev.md).
+
+**Đã làm (GH #10, 2026-09-27) — endpoint `GET /customers/{id}/profile` ([api_contract §3.5](../planning/02.%20api_contract.md)):**
+- Ngoài `promotion_program` còn hiện **coupon riêng** của KH (`coupon.coupon`, trạng thái `new`/`sent`, chưa hết hạn). **Mã coupon riêng bị che ngay trong API** (chỉ còn 4 ký tự cuối, ví dụ `••••4267`); mã chung của chương trình vẫn hiện đầy đủ, có nút copy.
+- **Lọc theo công ty** của kho / location đang bán (hoặc chương trình dùng chung).
+- **Tag theo giỏ hàng:** API trả điều kiện có cấu trúc (`min_amount`, `min_qty`, `product_scope`); FE so với tổng giỏ để hiện "Đủ điều kiện" hoặc "Còn thiếu X ₫".
+- Chương trình có `rule_partners_domain` không đánh giá được ngoài Odoo → vẫn hiện, đánh dấu `unverified`. Chương trình hết lượt (`maximum_use_number`) bị loại.
+- Thông tin KH có thêm **Bảng giá** (`property_product_pricelist`).
+- Vẫn **chỉ đọc**: không áp khuyến mãi vào đơn.
+
+---
+
+## A9. Luồng Giao hàng & vào sổ hóa đơn
+
+Quyết định owner 2026-09-26 (GH #2, #7, phương án a; kế toán chốt ở GH #15): **ngày hóa đơn = ngày giao hàng**. Hóa đơn để nháp từ lúc xác nhận đơn và chỉ vào sổ khi đơn **đã giao hết và đã thu đủ**. API: `POST /orders/{id}/deliver` ([api_contract §5.5](../planning/02.%20api_contract.md)).
+
+```mermaid
+flowchart TD
+    classDef user fill:#DBEAFE,stroke:#2563EB,color:#1e3a5f
+    classDef system fill:#F1F5F9,stroke:#64748B,color:#1e293b
+    classDef accountant fill:#CCFBF1,stroke:#0D9488,color:#134E4A
+    classDef decision fill:#FEF9C3,stroke:#CA8A04,color:#713f12
+    classDef terminal fill:#F8FAFC,stroke:#334155,color:#0f172a
+    classDef warning fill:#FEE2E2,stroke:#DC2626,color:#7f1d1d
+
+    A([Đơn đã xác nhận
+hóa đơn nháp]):::terminal --> B[Khách đến lấy hàng
+bấm Giao hàng trên chi tiết đơn]:::user
+    B --> C[Chọn / đổi serial nếu cần
+chỉ serial có sẵn]:::user
+    C --> D[Validate phiếu giao
+reserve → qty_done + lot → button_validate]:::system
+    D --> E{Odoo chấp nhận?}:::decision
+    E -- Không --> W[409 kèm hướng dẫn
+thiếu hàng / cần serial / Odoo từ chối]:::warning
+    E -- Có --> F{Đã thu đủ?}:::decision
+    F -- Chưa --> G[Hóa đơn giữ nháp
+awaiting_payment
+Thu tiền phần còn lại]:::user
+    G --> H[Khoản thu cuối được ghi]:::system
+    H --> I
+    F -- Rồi --> I[Ngày hóa đơn = ngày giao
+post hóa đơn]:::system
+    I --> J[Đối soát các khoản thu
+order_payment_links]:::system
+    J --> K[Khóa đơn
+ODOO_AUTO_LOCK_ORDER]:::system
+    K --> L([Hoàn tất — kế toán thấy hóa đơn đã vào sổ]):::accountant
+```
+
+**Ghi chú:**
+- **3 trigger** cùng một logic vào sổ: nút "Giao hàng" trên POS; khoản thu cuối đến sau khi giao; job nền mỗi 5 phút cho đơn được giao thẳng trên Odoo. Vì vậy hạch toán chậm nhất khoảng 5 phút sau khi hoàn thành đơn (GH #7, quy định ≤ 20 phút).
+- Phiếu đã validate trên Odoo được bỏ qua — nút "Giao hàng" vẫn dùng được để vào sổ hóa đơn cho đơn đã giao trên Odoo (`can_deliver` còn đúng khi hóa đơn còn nháp).
+- Thu tiền trước khi giao (đặt cọc, thu đủ trước): khoản thu là `account.payment` độc lập gắn với đơn (`order_payment_links`), đối soát lúc hóa đơn vào sổ.
+- Lỗi Odoo trả 409 có mã (`STOCK_NOT_RESERVED`, `SERIAL_REQUIRED`, `PICKING_NEEDS_ODOO_ACTION`, `DELIVERY_REJECTED` kèm nguyên văn lỗi Odoo cho quản lý / kế toán, `ORDER_BUSY`).
+- Rollback: `INVOICE_POST_MODE=on_confirm` quay về cách cũ (post + khóa ngay khi xác nhận).
+- "In phiếu giao": **không làm** (owner 2026-09-28, #18).
+
+---
+
+## A10. Luồng Đổi ngày hẹn lấy hàng (TH4 / TH5)
+
+Khách đến sớm hơn hoặc muộn hơn ngày hẹn. API: `PATCH /orders/{id}/pickup-date` ([api_contract §5.7](../planning/02.%20api_contract.md)).
+
+- **Ngày hẹn lấy hàng = `scheduled_date` của phiếu giao đi đang chờ** (sớm nhất nếu có nhiều phiếu). Chi tiết đơn hiện ở thẻ "Hẹn lấy hàng", danh sách đơn có cột / trường `pickup_date`.
+- Nhân viên bấm **"Đổi ngày"**, chọn ngày mới (hôm nay → tối đa 365 ngày), nhập lý do (không bắt buộc).
+- Backend dời `scheduled_date` của mọi phiếu giao đang chờ (giữ giờ trong ngày theo giờ VN) và `date_deadline` của các move chưa xong, rồi ghi **note nội bộ** lên chatter đơn: `[POS] Đổi ngày hẹn lấy hàng: cũ → mới. Lý do: …. Người đổi: …`.
+- **POS không sửa, không đóng `mail.activity`** (owner 2026-09-28: "không động tới activity nữa, chỉ dời ngày phiếu giao và ghi note"). Endpoint sửa activity của bản đầu (`PATCH /orders/{id}/activities/{id}`) **đã bỏ**.
+- Không đổi `commitment_date` (chỉ hiển thị).
+
+---
+
+## A11. Luồng Chuyển cọc (đổi sản phẩm — TH6)
+
+API: `POST /orders/{id}/release-deposit` ([api_contract §5.6](../planning/02.%20api_contract.md)). GH #5, kế toán chốt ở GH #15.
+
+1. **Hủy đơn cũ trên Odoo** (báo giá + phiếu giao + hoạt động cần làm; Odoo hỏi hủy hóa đơn nháp thì xác nhận). POS không có nút hủy đơn (#51).
+2. Trên chi tiết đơn cũ (đã hủy, còn cọc) bấm **"Chuyển cọc"**, chọn đơn mới của cùng khách (không bắt buộc).
+3. Backend bỏ liên kết giữ cọc (`order_payment_links` → `released`). `account.payment` giữ nguyên, trở thành **công nợ có của khách** (xem ở "Tiền cọc của khách"). Nếu có đơn mới → trừ luôn vào đơn mới (như `apply-credit`).
+4. Chặn khi: đơn cũ chưa hủy, đã giao hàng, hóa đơn đã vào sổ đang giữ cọc (kế toán "Đặt lại về nháp" + "Hủy" hóa đơn trước), hoặc không có cọc đang giữ trên POS.
+
+**Hoàn tiền cọc (TH7 — khách hủy cọc):** kế toán hoàn thủ công trên Odoo. POS không có chức năng hoàn tiền.
 
 ---
 
@@ -684,8 +783,8 @@ sequenceDiagram
 sequenceDiagram
     actor User as Thu ngân
     participant FE as Frontend
-    participant BE as Backend (TTLCache)
-    participant MST as VietQR API
+    participant BE as Backend (pg_cache)
+    participant MST as escodata (VietQR dự phòng)
 
     rect rgb(219, 234, 254)
         Note over User,FE: Thao tác người dùng
@@ -694,12 +793,15 @@ sequenceDiagram
     end
     rect rgb(241, 245, 249)
         Note over BE,MST: Xử lý hệ thống
-        alt Cache hit (TTL < 10 phút)
-            Note over BE: Trả từ TTLCache in-memory
+        alt Cache hit (tìm thấy: 10 phút, không tìm thấy: 60 giây)
+            Note over BE: Trả từ cache Postgres (pg_cache)
         else Cache miss
-            BE->>MST: GET /v2/business/{tax_code}
+            BE->>MST: GET escodata /api-mst/{tax_code}.htm
+            alt escodata lỗi mạng / 5xx (sau 3 lần thử)
+                BE->>MST: Dự phòng: VietQR GET /v2/business/{tax_code}
+            end
             MST-->>BE: Tên, địa chỉ, trạng thái hoạt động
-            Note over BE: Lưu vào TTLCache (10 phút)
+            Note over BE: Lưu cache. Lỗi không cache
         end
         BE-->>FE: Thông tin doanh nghiệp
     end

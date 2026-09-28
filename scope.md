@@ -1,8 +1,8 @@
 # VJ Mobile POS — Scope & Architecture Document
 
 > Trạng thái: Draft  
-> Cập nhật: 2026-04-22  
-> Phiên bản: 0.8 — Link to staging issue_log
+> Cập nhật: 2026-09-28  
+> Phiên bản: 0.9 — Hóa đơn theo ngày giao, chuyển cọc, ngày hẹn lấy hàng, thu ngân / hoa hồng, Profile KH, giao diện điện thoại (GH #2/#3/#5/#7/#9/#10/#17/#20/#22)
 
 ## Rule changes sau staging testing
 
@@ -11,13 +11,19 @@ Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) ch
 | Rule | Thay đổi | Issue |
 |---|---|---|
 | Order state | Map 1:1 với Odoo 5 states: `quotation / quotation_sent / sale_order / locked / cancelled` (không collapse sent→draft / done→confirmed) | #24 |
-| Auto-invoice | Sau confirm → tự tạo + post `account.move` (customer invoice) qua wizard `sale.advance.payment.inv`. Configurable `ODOO_AUTO_CREATE_INVOICE`, `ODOO_AUTO_POST_INVOICE`. | #12 |
-| Auto-lock | Sau invoice → `sale.order.action_done` → state=done. Configurable `ODOO_AUTO_LOCK_ORDER`. | #30 |
+| Auto-invoice | ~~Sau confirm → tự tạo + post `account.move`~~ **Thay bằng "Hóa đơn theo ngày giao" (GH #2/#7) bên dưới.** Sau confirm vẫn tự tạo hóa đơn qua wizard `sale.advance.payment.inv` (`ODOO_AUTO_CREATE_INVOICE`), nhưng để **nháp**. Cách cũ (post ngay) chỉ còn khi `INVOICE_POST_MODE=on_confirm`. | #12, GH #2 |
+| Auto-lock | Khóa đơn (`sale.order.action_done`, `ODOO_AUTO_LOCK_ORDER`) **dời sang sau khi hóa đơn vào sổ**. Đơn chờ lấy hàng phải còn sửa / hủy được trên Odoo. "Lock Confirmed Sales" trên Odoo đã tắt (GH #20). | #30, GH #2, GH #20 |
 | Cancel | POS UI **KHÔNG có cancel action** — đi Odoo sale.order. BE endpoint giữ cho admin tooling. | #51 |
 | Partial payment | Cho phép confirm đơn với partial/zero payment (đặt cọc); thu thêm sau. | #52 |
 | Customer required on confirm | POST `/orders` với `confirm=true` mà thiếu `customer_id` → BE reject `400 CUSTOMER_REQUIRED`. Trước đó BE âm thầm fallback `ODOO_DEFAULT_PARTNER_ID=1` → mọi đơn idle/load-draft mất customer rơi vào "Hệ Thống VJS". `confirm=false` (draft mode) vẫn cho fallback. Mở rộng rule cũ "KH bắt buộc trước thanh toán A2" sang cả bước confirm A1. | #102 |
-| Commission | `sale.order.commission_employee` (Many2one hr.employee) — configurable field name. **Refactor đang chờ Odoo module (#104):** tách 2 field — (a) field mới (TBD) auto-write `cashier = pos_user.hr_employee_id`, (b) `commission_employee` cho cashier pick từ dropdown `hr.employee`. Config: pre-staged `ODOO_CASHIER_EMPLOYEE_FIELD: str = ""` (empty default = giữ behavior #9 cũ). | #9, #104 |
+| Commission | **Đã xong (owner 2026-09-27, không chờ module Odoo).** (a) Tên thu ngân ghi tự động dạng text vào `sale.order.origin` ("Tài liệu nguồn", `ODOO_CASHIER_EMPLOYEE_FIELD=origin`). (b) `commission_employee` (Many2one hr.employee) do thu ngân **tự chọn**, không bắt buộc, không tự điền; tìm qua `GET /employees/search` (lọc theo công ty). Nháp lưu cả lựa chọn này. Chi tiết đơn hiện 2 dòng Thu ngân / Hoa hồng. | #9, #104, GH #9 |
 | Serial on line | `sale.order.line.serial_no` (Many2one stock.production.lot) + description embed fallback. | #33, #36, #40 |
+| Hóa đơn theo ngày giao | **Owner 2026-09-26 (phương án a).** `INVOICE_POST_MODE=on_delivery` (mặc định): hóa đơn để nháp khi xác nhận; chỉ vào sổ khi đơn **đã giao hết và đã thu đủ**, với **ngày hóa đơn = ngày giao**. Khoản thu trước khi giao ghi thành `account.payment` độc lập, gắn với đơn trong bảng `order_payment_links`, đối soát khi hóa đơn vào sổ. Trigger: nút "Giao hàng" (`POST /orders/{id}/deliver`), khoản thu cuối, hoặc job mỗi 5 phút cho đơn giao trên Odoo → hạch toán chậm nhất ~5 phút sau khi hoàn thành đơn. | GH #2, #7, #15 |
+| Ngày hẹn lấy hàng | Ngày hẹn = `scheduled_date` của phiếu giao đang chờ. Đổi ngày (`PATCH /orders/{id}/pickup-date`) dời ngày phiếu giao + `date_deadline` và ghi note nội bộ lên đơn. **POS không động tới `mail.activity`** (owner 2026-09-28; endpoint sửa activity đã bỏ). | GH #3, #15, #20 |
+| Chuyển cọc / hoàn cọc | Đổi SP (TH6): hủy đơn cũ **trên Odoo** rồi bấm "Chuyển cọc" (`POST /orders/{id}/release-deposit`) → cọc thành công nợ có của khách, trừ được vào đơn mới. Hoàn tiền cọc (TH7): kế toán làm thủ công trên Odoo, POS không có chức năng hoàn tiền. | GH #5, #15 |
+| Serial phải có sẵn | Owner 2026-09-28: "không cho nhập tay, nhất định phải có tồn tại số serial mới được bán". Chỉ chọn serial có trên Odoo (đúng sản phẩm, còn hàng tại kho bán). Dòng chưa có hàng vẫn tạo được (backorder, chọn serial lúc giao). | GH #20 |
+| Danh sách đơn | Thay OQ-L02 (cửa sổ cứng 7 ngày): mặc định 7 ngày, POS user chọn được khoảng ngày bất kỳ nhưng tối đa 92 ngày/lần lọc; ADMIN không giới hạn. | GH #3 |
+| Phương thức thanh toán | Hiện vẫn gán **theo từng user**. #26 (đang làm) sẽ đổi sang cấu hình mặc định theo cửa hàng — mục này sẽ cập nhật khi #26 xong. | #11, #14, GH #26 |
 | Invoice journal per warehouse | **Pending Odoo module (#103):** custom field `stock.warehouse.sale_journal_id` → POS đọc warehouse của SO, write `account.move.journal_id` trước `action_post`. Hiện tại Odoo fallback first sale journal (`11NPS - Bán Hàng`) cho mọi đơn — sai báo cáo doanh thu theo cửa hàng. Config: pre-staged `ODOO_WAREHOUSE_SALE_JOURNAL_FIELD: str = ""` (empty default = preserve current). | #103 |
 
 ---
@@ -27,8 +33,11 @@ Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) ch
 VJ Mobile POS là một ứng dụng web POS nhẹ, chạy trên trình duyệt, tích hợp với hệ thống Odoo 14 CE thông qua JSON-RPC.
 
 **Thiết bị & trình duyệt mục tiêu:**
-- Máy tính — Chrome (desktop layout)
-- iPad — Safari (tablet layout, touch-friendly) Hệ thống **không thay thế module POS của Odoo** mà đóng vai trò là một UI nghiệp vụ riêng, gọi vào Odoo để thực hiện các thao tác bán hàng và quản lý kho.
+- Máy tính — Chrome (desktop layout, ≥ 1280px)
+- iPad — Safari (tablet layout, touch-friendly)
+- Điện thoại (< 768px) — bán hàng qua thanh điều hướng dưới đáy (đợt Kính ngắm, 2026-09). Màn hình quản trị **chỉ dùng trên máy tính** (≥ 1280px).
+
+Hệ thống **không thay thế module POS của Odoo** mà đóng vai trò là một UI nghiệp vụ riêng, gọi vào Odoo để thực hiện các thao tác bán hàng và quản lý kho.
 
 ---
 
@@ -42,13 +51,13 @@ VJ Mobile POS là một ứng dụng web POS nhẹ, chạy trên trình duyệt,
 | 4 | Xuất tồn kho | Auto validate `stock.picking` + gán serial, tạo backorder nếu thiếu hàng | Đã xác nhận |
 | 5 | Quản lý backorder | Hiển thị, theo dõi và xử lý backorder trong Mobile POS | Đã xác nhận |
 | 6 | Kiểm tra tồn kho | Tra cứu `stock.quant` theo địa điểm được phân quyền | Đã xác nhận |
-| 7 | Tra cứu MST | Tra cứu mã số thuế khách hàng qua VietQR API | Đã xác nhận |
+| 7 | Tra cứu MST | Tra cứu mã số thuế khách hàng qua escodata (mặc định); VietQR API là nguồn dự phòng khi escodata lỗi | Đã xác nhận |
 | 8 | Quản lý user | Tạo user liên kết `hr.employee` Odoo (trừ admin mặc định), vô hiệu hóa, phân quyền (ADMIN) | Đã xác nhận |
 | 9 | In phiếu bán hàng | Generate PDF từ template HTML/CSS. 3 loại phiếu: xác nhận đơn, đặt cọc, thanh toán | Đã xác nhận |
 | 10 | Quản lý template in | ADMIN chỉnh sửa template HTML/CSS trong app, lưu PostgreSQL | Đã xác nhận |
 | 11 | Hoá đơn điện tử — Misa | Sau thanh toán tự động tạo hoá đơn nháp trên Misa qua API; thông báo email kế toán thuế | Đang thiết kế |
 | 12 | Thanh toán COD | Giao hàng & thu tiền hộ qua đơn vị vận chuyển; ghi nhận vận đơn, theo dõi trạng thái thu hộ | Đang thiết kế |
-| 13 | Xem Profile khách hàng | Nhân viên mở bảng thông tin KH (`res.partner`) + **chương trình khuyến mãi đang áp dụng** cho KH đó, đọc từ Odoo `coupon.program` (`program_type=promotion_program`, `active`, còn hạn, thỏa `rule_partners_domain`). **Chỉ xem read-only** — không áp discount vào đơn (áp discount vẫn ngoài phạm vi, xem B-03). Chi tiết design: [issue #115](../planning/issue_log_staging_dev.md), luồng [A8](process_flow.md). | Đang thiết kế |
+| 13 | Xem Profile khách hàng | Nhân viên mở bảng thông tin KH (`res.partner`) + **chương trình khuyến mãi đang áp dụng** cho KH đó, đọc từ Odoo `coupon.program` (`program_type=promotion_program`, `active`, còn hạn, thỏa `rule_partners_domain`). **Chỉ xem read-only** — không áp discount vào đơn (áp discount vẫn ngoài phạm vi, xem B-03). Chi tiết design: [issue #115](../planning/issue_log_staging_dev.md), luồng [A8](process_flow.md). Đã làm (GH #10, 2026-09-27): cả coupon riêng của KH (`coupon.coupon`, mã bị che còn 4 ký tự cuối), lọc theo công ty của kho đang bán, tag "Đủ điều kiện / Còn thiếu X ₫" theo giỏ hàng. | Đã làm |
 
 ### Ngoài phạm vi (Out of Scope)
 
@@ -118,7 +127,7 @@ graph TD
 
     subgraph External["🌍 External Services"]
         Odoo["🏢 Odoo 14 CE\nServer riêng"]
-        VietQR["🔍 VietQR API\nMST Lookup"]
+        VietQR["🔍 escodata (mặc định) / VietQR (dự phòng)\nMST Lookup"]
         SES["📧 AWS SES\nEmail (SMTP)"]
     end
 
@@ -185,7 +194,7 @@ Mục tiêu: **giảm thiểu số lần gọi Odoo JSON-RPC** bằng cách kế
 | Pricelist (fixed price) | 1 giờ | **Pre-fetch** khi login | 1 pricelist duy nhất, flush thủ công khi cập nhật |
 | Tồn kho (`stock.quant`) | 5 phút | **Pre-fetch** theo location user | Nạp tồn kho cho tất cả location được gán của user ngay sau login |
 | Khách hàng (`res.partner`) | 60 phút | **On-demand** + cache | Fetch khi tìm kiếm, cache kết quả — không pre-fetch toàn bộ |
-| MST (VietQR) | 10 phút | **On-demand** + cache | Fetch khi nhập MST, cache kết quả |
+| MST (escodata / VietQR) | 10 phút (không tìm thấy: 60 giây) | **On-demand** + cache | Fetch khi nhập MST, cache trong Postgres (`pg_cache`) |
 
 **Luồng Pre-fetch khi login:**
 ```
@@ -208,6 +217,7 @@ User login thành công
 |---|---|---|
 | Đơn nháp (draft order) | `draft_orders` + cột `expires_at` | Cleanup job định kỳ xóa bản ghi hết hạn |
 | Refresh token | `refresh_tokens` + cột `expires_at` | Xóa khi logout hoặc hết hạn |
+| Khoản thu gắn với đơn khi hóa đơn còn nháp | `order_payment_links` | GH #2/#5/#7. `linked` → `reconciled` / `released`. Một khoản chỉ giữ cho một đơn |
 
 ---
 
@@ -221,7 +231,8 @@ User login thành công
 | Xuất kho | `stock.picking`, `stock.move.line` | `button_validate` |
 | Backorder | `stock.backorder.confirmation` | `process` |
 | Serial / Lot | `stock.lot` | `search_read` (gợi ý), `create` (nếu mới) |
-| Invoice | `account.move` | `create` (draft — kế toán post trên Odoo) |
+| Invoice | `account.move` | `create` (draft) → `write` ngày hóa đơn = ngày giao + `action_post` khi đã giao + thu đủ (GH #2/#7) |
+| Ghi chú trên đơn | `sale.order` (chatter) | `message_post` note nội bộ khi đổi ngày hẹn lấy hàng (GH #3) |
 | Thanh toán | `account.payment` | `create` (từ Mobile POS, dựa trên thanh toán thực tế) |
 | Tồn kho | `stock.quant` | `search_read` |
 | Khách hàng | `res.partner` | `search_read`, `create`, `write` |
@@ -238,9 +249,9 @@ Backend dùng **JSON-RPC** (qua `httpx` async) để gọi các method trên, kh
 - **Pricelist**: Fixed price, 1 pricelist duy nhất, không chiết khấu
 - **UoM**: 1 đơn vị tính duy nhất cho tất cả sản phẩm
 - **VAT**: Chưa áp dụng giai đoạn đầu
-- **Invoice**: Tạo ở trạng thái **draft** — kế toán post trên Odoo riêng
+- **Invoice**: Tạo ở trạng thái **draft** khi xác nhận. POS tự post khi đơn đã giao hết + thu đủ, ngày hóa đơn = ngày giao (GH #2/#7, `INVOICE_POST_MODE=on_delivery`)
 - **account.payment**: Tạo từ Mobile POS dựa trên thanh toán thực tế của khách
-- **Serial Number**: POS user nhập / chọn serial, hệ thống **gợi ý từ `stock.lot` có sẵn** theo sản phẩm
+- **Serial Number**: POS user **chỉ chọn** serial từ `stock.lot` có sẵn theo sản phẩm — không nhập tay, không tạo serial mới (GH #20)
 - **Warehouse**: Tự động chọn dựa trên warehouse/location được gán cho user (14 warehouse, 20+ location)
 - **Backorder**: Được hiển thị và xử lý trong Mobile POS
 
@@ -250,10 +261,11 @@ Backend dùng **JSON-RPC** (qua `httpx` async) để gọi các method trên, kh
 
 ### 6.1 Tra cứu MST (Mã số thuế)
 
-- **Provider**: VietQR API (miễn phí)
-- **Endpoint**: `GET https://api.vietqr.io/v2/business/{mst}`
-- **Trả về**: Tên doanh nghiệp, địa chỉ, trạng thái hoạt động
-- **Cache**: TTLCache in-memory, TTL = 10 phút
+- **Provider**: escodata (miễn phí, không cần key) — mặc định từ 2026-09 (`MST_LOOKUP_PROVIDER=escodata`)
+- **Endpoint**: `GET https://escodata.net/api-mst/{mst}.htm` (`ESCODATA_BASE_URL`)
+- **Dự phòng**: escodata lỗi mạng / 5xx → VietQR `GET https://api.vietqr.io/v2/business/{mst}`. "Không tìm thấy" không chuyển nguồn.
+- **Trả về**: Tên doanh nghiệp, địa chỉ, trạng thái hoạt động (+ người đại diện, ngày cấp phép, ngành nghề khi dùng escodata)
+- **Cache**: Postgres `pg_cache`, TTL = 10 phút (không tìm thấy: 60 giây)
 - **Rate limit**: Miễn phí — cần theo dõi giới hạn khi traffic tăng
 
 ### 6.2 Email — AWS SES
