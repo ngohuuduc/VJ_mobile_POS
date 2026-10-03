@@ -8,7 +8,7 @@ admin_users          break-glass admin (password)
 refresh_tokens       rotation, remember-me
 auth_flow_states     OIDC state/nonce/PKCE + one-time exchange codes
 password_reset_tokens legacy
-payment_method_configs code, label, sequence, vietqr_enabled, vietqr_bank_bin/account_no/name, memo_prefix
+payment_method_configs code, label, sequence, vietqr_enabled, vietqr_bank_bin/account_no/name, memo_suffix
 store_configs        per warehouse: invoice journal
 store_payment_methods warehouse × method → payment journal (cash/bank)
 order_payment_links  POS payment ↔ sale.order (draft-invoice credits; source=payment|vietqr_webhook…)
@@ -24,7 +24,7 @@ pg_cache (raw table) key/value cache with expires_at, updated_at
 ## Migrations (`alembic/versions`)
 0001 initial · 0002 payment_method_configs · 0003 user allowed methods · 0004 username ci ·
 0005 order_payment_links · 0006 store_configs · 0007 vietqr flag · 0008 template paper/cache ts ·
-0009 vietqr account · 0010 vietqr requests + attachments · 0011 Entra login · 0012 SePay webhook.
+0009 vietqr account · 0010 vietqr requests + attachments · 0011 Entra login · 0012 SePay webhook · 0013 memo prefix → suffix.
 Applied automatically at backend startup.
 
 ## Odoo models used (by frequency)
