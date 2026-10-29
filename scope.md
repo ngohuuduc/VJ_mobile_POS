@@ -45,7 +45,7 @@ Hệ thống **không thay thế module POS của Odoo** mà đóng vai trò là
 
 | # | Nghiệp vụ | Mô tả | Trạng thái |
 |---|---|---|---|
-| 1 | Bán hàng | Tạo và xác nhận `sale.order`, lưu đơn nháp tối đa 8 giờ (PostgreSQL). KH không bắt buộc khi tạo đơn — chỉ bắt buộc trước khi thanh toán | Đã xác nhận |
+| 1 | Bán hàng | Tạo và xác nhận `sale.order`, lưu đơn nháp (PostgreSQL; hết hạn sau số giờ do quản trị cấu hình). KH không bắt buộc khi tạo đơn — chỉ bắt buộc trước khi thanh toán | Đã xác nhận |
 | 2 | Nhận thanh toán | Ghi nhận thủ công: tiền mặt, chuyển khoản, VNPay, MoMo, thẻ | Đã xác nhận |
 | 3 | Đặt cọc | Nhân viên nhập số tiền cọc tự do. sale.order giữ trạng thái confirmed. Thu phần còn lại bằng cách tìm đơn theo thông tin KH | Đã xác nhận |
 | 4 | Xuất tồn kho | Auto validate `stock.picking` + gán serial, tạo backorder nếu thiếu hàng | Đã xác nhận |
@@ -171,7 +171,7 @@ graph TD
 | Odoo connector | httpx async — JSON-RPC | Tránh control-byte bug của XML-RPC. Singleton + semaphore 8 RPC đồng thời, timeout 30s |
 | PDF generation | `WeasyPrint` + `Jinja2` (Python, backend) | FastAPI render HTML/CSS template → PDF binary |
 | Ảnh sản phẩm | Local storage (server) | ADMIN upload trong app, backend resize + crop → thumbnail. Max 5MB |
-| Email | AWS SES via `smtplib` | Reset password, thông báo (mở rộng sau) |
+| Email | AWS SES via `smtplib` | Chưa dùng — thông báo (mở rộng sau) |
 
 ### 4.2 Mô hình Auth — Service Account
 
@@ -272,16 +272,14 @@ Backend dùng **JSON-RPC** (qua `httpx` async) để gọi các method trên, kh
 
 - **Provider**: AWS SES (Simple Email Service)
 - **Kết nối**: Python `smtplib` (SMTP protocol)
-- **Dùng cho**: Reset password (token qua email)
+- **Dùng cho**: chưa dùng — POS không còn mật khẩu riêng nên không còn email reset password (xem process_flow B1/B4)
 - **Giai đoạn sau**: Gửi biên lai, xác nhận đơn, thông báo đặt cọc cho KH (xem Backlog B-14)
 
 ### 6.3 Thanh toán
 
 - **Phương thức giai đoạn 1** (BE hỗ trợ): 
-  - Tiền mặt (`cash`)
-  - Chuyển khoản / Thẻ tín dụng (`transfer`/`credit_card` — journal map: bank)
-  - "Thanh toán khác (sắp có)" — UI hiển thị option disabled làm placeholder cho VNPay/MoMo/VietQR Payment/COD
-- **Mô hình hiện tại**: Ghi nhận **thủ công** — thu ngân xác nhận sau khi khách thanh toán
+  - Phương thức do quản trị cấu hình theo từng cửa hàng (tiền mặt, chuyển khoản / thẻ, VietQR, ...), kèm "Dùng tiền cọc" và COD (thu hộ qua hãng vận chuyển) — xem process_flow A2
+- **Mô hình hiện tại**: tiền mặt / chuyển khoản / thẻ ghi nhận **thủ công**; VietQR tự ghi nhận khi ngân hàng báo có; VNPay, MoMo chưa có
 - **Mô hình planned**: VNPay, MoMo, VietQR Payment tích hợp API — xem mục 6.6, 6.7, 6.8
 - **Đặc điểm**: Hỗ trợ nhiều phương thức trong 1 đơn
 - **Đặt cọc**: Hỗ trợ — nhân viên nhập tự do, tìm đơn theo thông tin KH khi thu phần còn lại
@@ -475,7 +473,7 @@ Các hạng mục chưa triển khai trong giai đoạn này, để dành cho c�
 
 | # | Hạng mục | Mô tả | Ưu tiên | Trạng thái |
 |---|---|---|---|---|
-| B-15 | Email Service (mở rộng) | Gửi email xác nhận đơn hàng, biên lai thanh toán, thông báo đặt cọc cho KH. Provider: **AWS SES** (đã xác nhận). Giai đoạn đầu chỉ dùng cho reset password | Trung bình | Backlog |
+| B-15 | Email Service (mở rộng) | Gửi email xác nhận đơn hàng, biên lai thanh toán, thông báo đặt cọc cho KH. Provider: **AWS SES** (đã xác nhận). Chưa dùng (không còn reset password) | Trung bình | Backlog |
 | B-16 | Zalo Messaging | Gửi thông báo tự động qua Zalo OA (Official Account): xác nhận đơn, trạng thái giao hàng, nhắc thanh toán phần còn lại | Trung bình | Backlog |
 
 ### 10.4 Ngoài phạm vi dài hạn
