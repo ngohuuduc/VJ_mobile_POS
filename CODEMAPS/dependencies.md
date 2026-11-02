@@ -5,7 +5,7 @@
 - Odoo 14 (JSON-RPC, user `posdev`) — system of record.
 - Microsoft Entra ID + Graph (login, group gate, group sync; app perms GroupMember.Read.All, User.Read.All).
 - SePay (bank-transfer webhooks) · Odoo module `parainsight_sepay_webhook` creates account.payment.
-- api.vietqr.io (bank BIN list, bundled fallback) · escodata.net (MST lookup, VietQR fallback).
+- api.vietqr.io (bank BIN list, bundled fallback) · api.xinvoice.vn + mst.minvoice.com.vn (MST lookup; VietQR also a fallback).
 - PostHog US cloud (analytics + session recording, PII masked).
 - Container registry registry.parainsight.com (CI images).
 

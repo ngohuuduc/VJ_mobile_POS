@@ -26,7 +26,7 @@ Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) ch
 | A10 — Đổi ngày hẹn (mới) | Dời `scheduled_date` phiếu giao đang chờ + ghi note nội bộ. **Không động tới `mail.activity`.** | GH #3, #15, #20 |
 | A11 — Chuyển cọc (mới) | Đơn cũ hủy trên Odoo → "Chuyển cọc" → cọc thành công nợ có, trừ được vào đơn mới. Hoàn cọc làm trên Odoo. | GH #5, #15 |
 | A8 — Profile KH | Đã làm: coupon riêng (mã bị che), lọc theo công ty của kho đang bán, tag "Đủ điều kiện / Còn thiếu X ₫". | GH #10 |
-| B6 — MST | Nguồn mặc định escodata, VietQR dự phòng. | GH #20 |
+| B6 — MST | Nguồn mặc định xinvoice; minvoice, VietQR dự phòng (cả khi nguồn chính không có). | GH #20 |
 | Invoice journal | Sổ hóa đơn nay cấu hình **theo từng cửa hàng** ở "Cấu hình cửa hàng" (sổ hóa đơn + tài khoản phân tích + sổ thanh toán); thiếu thì cửa hàng không bán được. | GH #26, #103 |
 | A12–A14 (mới) | Khách ký nhận hàng, Đổi hàng (đổi serial), Thu tiền / Tiền đã chuyển. | GH #35, #81, #83, #91 |
 
@@ -107,7 +107,7 @@ Trang **"Thu tiền"** (menu; điện thoại: More › Thu tiền) dùng khi kh
 | A4 | Chờ giao & Nháp | Danh sách phiếu giao chưa giao hết, đơn nháp |
 | A5 | Hủy đơn hàng | Không có trên giao diện POS; hủy trên Odoo |
 | A6 | Xuất hoá đơn điện tử | *(Planned)* Misa chưa có trong code; POS chỉ ghi cờ yêu cầu VAT |
-| A7 | Tạo / Cập nhật Khách hàng | Tìm / tạo / sửa `res.partner`, auto-fill MST (escodata, VietQR dự phòng), sync Odoo ngay |
+| A7 | Tạo / Cập nhật Khách hàng | Tìm / tạo / sửa `res.partner`, auto-fill MST (xinvoice; minvoice, VietQR dự phòng), sync Odoo ngay |
 | A8 | Xem Profile Khách hàng | Mở bảng thông tin KH + chương trình khuyến mãi đang áp dụng (Odoo `coupon.program`) |
 | A9 | Giao hàng & vào sổ hóa đơn | Chỉ giao khi trả đủ hoặc COD; chọn serial, ảnh giao hàng, hàng đợi ghi Odoo |
 | A10 | Đổi ngày hẹn lấy hàng | Dời ngày phiếu giao + ghi note nội bộ |
@@ -125,7 +125,7 @@ Trang **"Thu tiền"** (menu; điện thoại: More › Thu tiền) dùng khi kh
 | B3 | Quản lý User | Tự tạo từ Microsoft, ADMIN phân cửa hàng / quyền |
 | B4 | Reset Password | *Đã bỏ* (không còn mật khẩu riêng) |
 | B5 | Kiểm tra tồn kho | Tra cứu stock.quant theo location |
-| B6 | Tra cứu MST | escodata (VietQR dự phòng) + cache Postgres |
+| B6 | Tra cứu MST | xinvoice (minvoice, VietQR dự phòng) + cache Postgres |
 | B7 | In phiếu bán hàng | Generate PDF (A4/A5) từ template |
 | B8 | Tích hợp Misa (eInvoice) | Xác thực, tạo hoá đơn nháp, xử lý lỗi |
 | B9 | Tích hợp Đơn vị giao hàng / COD | Tạo vận đơn, nhận callback xác nhận thu tiền |
@@ -478,7 +478,7 @@ flowchart TD
 - **MST đã tồn tại**: tạo Công ty trùng MST với một công ty đã có → 409 `CUSTOMER_MST_EXISTS`, gợi ý chọn công ty đó.
 - **Tìm kiếm** (OQ-J03): tên, SĐT, email, MST từ 3 ký tự; khi chưa gõ có mục "Xem gần đây". Khách bị quản trị ẩn khỏi POS sẽ không hiện.
 - **SĐT auto-format** (OQ-AF02): `0901234567` → `0901 234 567`. Regex VN: `^(0|\+84)(\d{9,10})$`.
-- **Tra MST** (OQ-X01, B6): nút "Tra MST" → escodata mặc định, VietQR dự phòng → auto-fill tên + địa chỉ, sửa được; báo lỗi nếu MST không còn hoạt động.
+- **Tra MST** (OQ-X01, B6): nút "Tra MST" → xinvoice mặc định; minvoice, VietQR dự phòng → auto-fill tên + địa chỉ, sửa được; báo lỗi nếu MST không còn hoạt động.
 - **Sync ngay** (OQ-X01): backend gọi `res.partner.create` / `write` qua JSON-RPC ngay khi bấm Lưu; cache khách được làm mới.
 - **Confirm dialog** (OQ-Q01): xác nhận trước khi tạo / cập nhật.
 - **Đính kèm vào cart**: entry từ màn Tạo đơn → sau khi lưu, khách được chọn cho đơn luôn.
@@ -808,7 +808,7 @@ sequenceDiagram
     actor User as Thu ngân
     participant FE as Frontend
     participant BE as Backend (pg_cache)
-    participant MST as escodata (VietQR dự phòng)
+    participant MST as xinvoice (minvoice, VietQR dự phòng)
 
     rect rgb(219, 234, 254)
         Note over User,FE: Thao tác người dùng
@@ -820,9 +820,9 @@ sequenceDiagram
         alt Cache hit (tìm thấy: lưu tạm; không tìm thấy: lưu rất ngắn)
             Note over BE: Trả từ cache Postgres (pg_cache)
         else Cache miss
-            BE->>MST: GET escodata /api-mst/{tax_code}.htm
-            alt escodata lỗi mạng / 5xx (sau 3 lần thử)
-                BE->>MST: Dự phòng: VietQR GET /v2/business/{tax_code}
+            BE->>MST: GET xinvoice /gdt-api/tax-payer/{tax_code}
+            alt xinvoice lỗi mạng / 5xx (sau 3 lần thử) hoặc không tìm thấy
+                BE->>MST: Dự phòng: minvoice, rồi VietQR (dừng ở nguồn đầu tiên có)
             end
             MST-->>BE: Tên, địa chỉ, trạng thái hoạt động
             Note over BE: Lưu cache. Lỗi không cache

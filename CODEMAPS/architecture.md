@@ -13,7 +13,7 @@ Monorepo `VJ_POS_Platform` (git submodules): `backend/` FastAPI · `frontend/` Q
  Odoo 14 (sale/stock/account/hr) ◄── SePay webhook module (creates account.payment)
      ▲                                          │
  Microsoft Entra ID (OIDC+PKCE, Graph)    SePay ──► POST /api/v1/webhooks/sepay
- PostHog (US) analytics · api.vietqr.io bank list · escodata MST lookup
+ PostHog (US) analytics · api.vietqr.io bank list · xinvoice / minvoice MST lookup
 ```
 
 ## Boundaries

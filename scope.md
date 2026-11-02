@@ -51,7 +51,7 @@ Hệ thống **không thay thế module POS của Odoo** mà đóng vai trò là
 | 4 | Xuất tồn kho | Auto validate `stock.picking` + gán serial, tạo backorder nếu thiếu hàng | Đã xác nhận |
 | 5 | Quản lý backorder | Hiển thị, theo dõi và xử lý backorder trong Mobile POS | Đã xác nhận |
 | 6 | Kiểm tra tồn kho | Tra cứu `stock.quant` theo địa điểm được phân quyền | Đã xác nhận |
-| 7 | Tra cứu MST | Tra cứu mã số thuế khách hàng qua escodata (mặc định); VietQR API là nguồn dự phòng khi escodata lỗi | Đã xác nhận |
+| 7 | Tra cứu MST | Tra cứu mã số thuế khách hàng qua xinvoice (mặc định); minvoice và VietQR là nguồn dự phòng khi nguồn chính lỗi hoặc không có | Đã xác nhận |
 | 8 | Quản lý user | Tạo user liên kết `hr.employee` Odoo (trừ admin mặc định), vô hiệu hóa, phân quyền (ADMIN) | Đã xác nhận |
 | 9 | In phiếu bán hàng | Generate PDF từ template HTML/CSS. 3 loại phiếu: xác nhận đơn, đặt cọc, thanh toán | Đã xác nhận |
 | 10 | Quản lý template in | ADMIN chỉnh sửa template HTML/CSS trong app, lưu PostgreSQL | Đã xác nhận |
@@ -127,7 +127,7 @@ graph TD
 
     subgraph External["🌍 External Services"]
         Odoo["🏢 Odoo 14 CE\nServer riêng"]
-        VietQR["🔍 escodata (mặc định) / VietQR (dự phòng)\nMST Lookup"]
+        VietQR["🔍 xinvoice (mặc định) / minvoice, VietQR (dự phòng)\nMST Lookup"]
         SES["📧 AWS SES\nEmail (SMTP)"]
     end
 
@@ -194,7 +194,7 @@ Mục tiêu: **giảm thiểu số lần gọi Odoo JSON-RPC** bằng cách kế
 | Pricelist (fixed price) | 1 giờ | **Pre-fetch** khi login | 1 pricelist duy nhất, flush thủ công khi cập nhật |
 | Tồn kho (`stock.quant`) | 5 phút | **Pre-fetch** theo location user | Nạp tồn kho cho tất cả location được gán của user ngay sau login |
 | Khách hàng (`res.partner`) | 60 phút | **On-demand** + cache | Fetch khi tìm kiếm, cache kết quả — không pre-fetch toàn bộ |
-| MST (escodata / VietQR) | 10 phút (không tìm thấy: 60 giây) | **On-demand** + cache | Fetch khi nhập MST, cache trong Postgres (`pg_cache`) |
+| MST (xinvoice / minvoice / VietQR) | 10 phút (không tìm thấy: 60 giây) | **On-demand** + cache | Fetch khi nhập MST, cache trong Postgres (`pg_cache`) |
 
 **Luồng Pre-fetch khi login:**
 ```
@@ -261,10 +261,10 @@ Backend dùng **JSON-RPC** (qua `httpx` async) để gọi các method trên, kh
 
 ### 6.1 Tra cứu MST (Mã số thuế)
 
-- **Provider**: escodata (miễn phí, không cần key) — mặc định từ 2026-09 (`MST_LOOKUP_PROVIDER=escodata`)
-- **Endpoint**: `GET https://escodata.net/api-mst/{mst}.htm` (`ESCODATA_BASE_URL`)
-- **Dự phòng**: escodata lỗi mạng / 5xx → VietQR `GET https://api.vietqr.io/v2/business/{mst}`. "Không tìm thấy" không chuyển nguồn.
-- **Trả về**: Tên doanh nghiệp, địa chỉ, trạng thái hoạt động (+ người đại diện, ngày cấp phép, ngành nghề khi dùng escodata)
+- **Nguồn**: xinvoice (miễn phí, không cần key) — mặc định từ 2026-11-02, thay escodata (dữ liệu cũ, thiếu công ty mới). Chọn trên Cấu hình hệ thống › Tra cứu MST.
+- **Endpoint**: `GET https://api.xinvoice.vn/gdt-api/tax-payer/{mst}` (giới hạn 10 lần / 30 giây mỗi IP)
+- **Dự phòng**: nguồn chính lỗi mạng / 5xx **hoặc** báo "không tìm thấy" → hỏi lần lượt minvoice `GET https://mst.minvoice.com.vn/api/System/SearchTaxCode?tax={mst}` rồi VietQR `GET https://api.vietqr.io/v2/business/{mst}`. Chỉ báo "không tìm thấy" khi không nguồn nào có.
+- **Trả về**: Tên doanh nghiệp, địa chỉ, trạng thái hoạt động (minvoice không có trạng thái)
 - **Cache**: Postgres `pg_cache`, TTL = 10 phút (không tìm thấy: 60 giây)
 - **Rate limit**: Miễn phí — cần theo dõi giới hạn khi traffic tăng
 
