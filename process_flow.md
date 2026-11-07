@@ -167,11 +167,11 @@ flowchart TD
 
     E -- Có --> F{Có tồn kho\ntại location?}:::decision
     F -- Có tồn kho --> F1[Gợi ý serial từ stock.lot\nUser chọn / nhập serial]:::user
-    F -- Chưa có tồn kho --> F2[Thêm SP dưới dạng đặt cọc\nserial = null, ghi chú `**` trong tên\nBackorder sẽ tạo khi nhập kho]:::warning
+    F -- Chưa có tồn kho --> F2[Thêm SP dưới dạng đặt cọc\nserial = null, ghi chú `**` trong tên\nĐơn hàng giao sau — giao khi nhập kho]:::warning
 
     E -- Không --> G{Có tồn kho\ntại location?}:::decision
     G -- Có tồn kho --> G1[Thêm trực tiếp\nqty theo nhu cầu]:::system
-    G -- Chưa có tồn kho --> G2[Thêm SP dưới dạng đặt cọc\nghi chú `**` trong tên\nBackorder sẽ tạo khi nhập kho]:::warning
+    G -- Chưa có tồn kho --> G2[Thêm SP dưới dạng đặt cọc\nghi chú `**` trong tên\nĐơn hàng giao sau — giao khi nhập kho]:::warning
 
     F1 --> H{Còn thêm SP?}:::decision
     F2 --> H
@@ -203,11 +203,11 @@ flowchart TD
 | Có serial? | Tồn kho? | Behavior | Node |
 |---|---|---|---|
 | Có | ✓ có | Gợi ý từ `stock.lot` → cashier pick 1 serial cụ thể (qty=1/lot) | **F1** |
-| Có | ✗ chưa | Thêm vào đơn với `serial_number=null`, tên SP `** ...`, backorder | **F2** |
+| Có | ✗ chưa | Thêm vào đơn với `serial_number=null`, tên SP `** ...`, đơn hàng giao sau | **F2** |
 | Không | ✓ có | Thêm trực tiếp theo qty cashier nhập (qty bất kỳ) | **G1** |
-| Không | ✗ chưa | Thêm vào đơn với qty preorder, tên SP `** ...`, backorder | **G2** |
+| Không | ✗ chưa | Thêm vào đơn với qty preorder, tên SP `** ...`, đơn hàng giao sau | **G2** |
 
-- **Pattern `**` thống nhất** cho mọi dòng "đặt cọc / chờ nhập kho" (F2 và G2) — không phân biệt có serial hay không. Cashier nhìn vào tên SP `**` là biết dòng này sẽ backorder.
+- **Pattern `**` thống nhất** cho mọi dòng "đặt cọc / chờ nhập kho" (F2 và G2) — không phân biệt có serial hay không. Cashier nhìn vào tên SP `**` là biết dòng này là đơn hàng giao sau.
 - **Serial chỉ chọn, không nhập tay** (owner 2026-09-28, GH #20): dialog chọn serial chỉ liệt kê lot có sẵn; ô tìm chỉ lọc danh sách. Backend từ chối serial không tồn tại / của sản phẩm khác / không còn hàng tại kho bán (409 `SERIAL_NOT_FOUND` / `SERIAL_WRONG_PRODUCT` / `SERIAL_NOT_AVAILABLE`). Cùng một serial hai lần trong một đơn bị chặn (409). Có thể chọn **"Chọn serial sau"** (dòng ghi "Serial: chọn khi giao") — chọn lúc giao hàng.
 - **Sau khi xác nhận + thanh toán**: app chuyển thẳng tới chi tiết đơn `/orders/{id}` và hiện banner thành công **một lần** (mã đơn để đọc cho khách, đã thu, còn phải thu, tiền thối). Tải lại trang không hiện lại banner.
 - **Kho đang bán được nhớ** theo từng user (GH #17). Đổi kho khi giỏ đang có hàng → giỏ được lưu thành nháp.
@@ -217,7 +217,7 @@ flowchart TD
 - **Thông tin thêm** (không bắt buộc): nguồn đơn hàng, nhân viên hoa hồng, người giới thiệu (nếu cửa hàng bật), công tắc "Xuất hoá đơn VAT" + "Xuất hoá đơn cho" (A6).
 - **Lưu nháp** (F8 trên máy tính) không cần khách; nháp tự xóa sau một số giờ do quản trị đặt; mở "Tạo đơn" với giỏ trống thì tự mở lại nháp mới nhất của kho; xem / mở lại / xóa mọi nháp ở "Chờ giao & Nháp › Đơn nháp".
 - **Serial gán thực tế** ở A3/A9: hàng về kho thì giao ở "Chờ giao" và chọn serial lúc giao. Dòng không serial hết hàng cũng chỉ giao được khi kho đủ.
-- **Dòng hết hàng** (F2/G2): cần tích "Chưa có hàng — tạo backorder"; vào giỏ với tiền tố `**`.
+- **Dòng hết hàng** (F2/G2): cần tích "Chưa có hàng — tạo đơn hàng giao sau"; vào giỏ với tiền tố `**`.
 - **Chuyển giữa máy / ứng dụng**: giỏ được lưu vào máy khi chuyển app (điện thoại); quá lâu không thao tác thì giỏ tự lưu thành nháp rồi đăng xuất (B1).
 - **OQ-K03, OQ-Q04**: cho phép thêm SP hết hàng kèm cảnh báo; serial chọn ngay khi có tồn (F1), defer nếu không (F2, A4).
 
@@ -300,7 +300,7 @@ flowchart TD
 
 ---
 
-## A3. Luồng Xuất kho (Auto validate + Serial + Backorder)
+## A3. Luồng Xuất kho (Auto validate + Serial + Đơn hàng chờ giao)
 
 ```mermaid
 flowchart TD
@@ -316,8 +316,8 @@ flowchart TD
     C --> D{Đủ hàng?}:::decision
     D -- Đủ toàn bộ --> E{Có Serial Number?}:::decision
     D -- Thiếu một phần --> F[Hiển thị cảnh báo\ndanh sách hàng thiếu + SL]:::warning
-    F --> G[Validate phần có hàng\nTạo backorder cho phần thiếu]:::system
-    G --> H([Backorder → Luồng A4]):::terminal
+    F --> G[Validate phần có hàng\nTạo đơn hàng chờ giao cho phần thiếu]:::system
+    G --> H([Đơn hàng chờ giao → Luồng A4]):::terminal
     E -- Không --> I[Auto validate picking\nbutton_validate]:::system
     E -- Có --> J[Gợi ý serial từ stock.lot\ntheo sản phẩm đã chọn]:::system
     J --> K[POS user chọn serial\nkhông nhập tay]:::user
@@ -331,9 +331,9 @@ flowchart TD
 
 ---
 
-## A4. Luồng Chờ giao & Nháp (trước đây: Quản lý Backorder)
+## A4. Luồng Chờ giao & Nháp (trước đây: Quản lý đơn hàng chờ giao)
 
-Trang **"Chờ giao & Nháp"** (GH #97) gộp "Backorder" và "Chờ giao" cũ; đường dẫn `/backorders` tự chuyển sang `/deliveries`. Có hai tab: **Chờ giao** và **Đơn nháp** (A1).
+Trang **"Chờ giao & Nháp"** (GH #97) gộp "Đơn hàng chờ giao" và "Chờ giao" cũ; đường dẫn `/backorders` tự chuyển sang `/deliveries`. Có hai tab: **Chờ giao** và **Đơn nháp** (A1).
 
 ```mermaid
 flowchart TD

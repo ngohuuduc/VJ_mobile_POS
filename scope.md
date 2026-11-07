@@ -21,7 +21,7 @@ Xem [planning/issue_log_staging_dev.md](../planning/issue_log_staging_dev.md) ch
 | Hóa đơn theo ngày giao | **Owner 2026-09-26 (phương án a).** `INVOICE_POST_MODE=on_delivery` (mặc định): hóa đơn để nháp khi xác nhận; chỉ vào sổ khi đơn **đã giao hết và đã thu đủ**, với **ngày hóa đơn = ngày giao**. Khoản thu trước khi giao ghi thành `account.payment` độc lập, gắn với đơn trong bảng `order_payment_links`, đối soát khi hóa đơn vào sổ. Trigger: nút "Giao hàng" (`POST /orders/{id}/deliver`), khoản thu cuối, hoặc job mỗi 5 phút cho đơn giao trên Odoo → hạch toán chậm nhất ~5 phút sau khi hoàn thành đơn. | GH #2, #7, #15 |
 | Ngày hẹn lấy hàng | Ngày hẹn = `scheduled_date` của phiếu giao đang chờ. Đổi ngày (`PATCH /orders/{id}/pickup-date`) dời ngày phiếu giao + `date_deadline` và ghi note nội bộ lên đơn. **POS không động tới `mail.activity`** (owner 2026-09-28; endpoint sửa activity đã bỏ). | GH #3, #15, #20 |
 | Chuyển cọc / hoàn cọc | Đổi SP (TH6): hủy đơn cũ **trên Odoo** rồi bấm "Chuyển cọc" (`POST /orders/{id}/release-deposit`) → cọc thành công nợ có của khách, trừ được vào đơn mới. Hoàn tiền cọc (TH7): kế toán làm thủ công trên Odoo, POS không có chức năng hoàn tiền. | GH #5, #15 |
-| Serial phải có sẵn | Owner 2026-09-28: "không cho nhập tay, nhất định phải có tồn tại số serial mới được bán". Chỉ chọn serial có trên Odoo (đúng sản phẩm, còn hàng tại kho bán). Dòng chưa có hàng vẫn tạo được (backorder, chọn serial lúc giao). | GH #20 |
+| Serial phải có sẵn | Owner 2026-09-28: "không cho nhập tay, nhất định phải có tồn tại số serial mới được bán". Chỉ chọn serial có trên Odoo (đúng sản phẩm, còn hàng tại kho bán). Dòng chưa có hàng vẫn tạo được (đơn hàng giao sau, chọn serial lúc giao). | GH #20 |
 | Danh sách đơn | Thay OQ-L02 (cửa sổ cứng 7 ngày): mặc định 7 ngày, POS user chọn được khoảng ngày bất kỳ nhưng tối đa 92 ngày/lần lọc; ADMIN không giới hạn. | GH #3 |
 | Phương thức thanh toán | Hiện vẫn gán **theo từng user**. #26 (đang làm) sẽ đổi sang cấu hình mặc định theo cửa hàng — mục này sẽ cập nhật khi #26 xong. | #11, #14, GH #26 |
 | Invoice journal per warehouse | **Pending Odoo module (#103):** custom field `stock.warehouse.sale_journal_id` → POS đọc warehouse của SO, write `account.move.journal_id` trước `action_post`. Hiện tại Odoo fallback first sale journal (`11NPS - Bán Hàng`) cho mọi đơn — sai báo cáo doanh thu theo cửa hàng. Config: pre-staged `ODOO_WAREHOUSE_SALE_JOURNAL_FIELD: str = ""` (empty default = preserve current). | #103 |
@@ -48,8 +48,8 @@ Hệ thống **không thay thế module POS của Odoo** mà đóng vai trò là
 | 1 | Bán hàng | Tạo và xác nhận `sale.order`, lưu đơn nháp (PostgreSQL; hết hạn sau số giờ do quản trị cấu hình). KH không bắt buộc khi tạo đơn — chỉ bắt buộc trước khi thanh toán | Đã xác nhận |
 | 2 | Nhận thanh toán | Ghi nhận thủ công: tiền mặt, chuyển khoản, VNPay, MoMo, thẻ | Đã xác nhận |
 | 3 | Đặt cọc | Nhân viên nhập số tiền cọc tự do. sale.order giữ trạng thái confirmed. Thu phần còn lại bằng cách tìm đơn theo thông tin KH | Đã xác nhận |
-| 4 | Xuất tồn kho | Auto validate `stock.picking` + gán serial, tạo backorder nếu thiếu hàng | Đã xác nhận |
-| 5 | Quản lý backorder | Hiển thị, theo dõi và xử lý backorder trong Mobile POS | Đã xác nhận |
+| 4 | Xuất tồn kho | Auto validate `stock.picking` + gán serial, tạo đơn hàng chờ giao cho phần thiếu hàng | Đã xác nhận |
+| 5 | Quản lý đơn hàng chờ giao | Hiển thị, theo dõi và xử lý đơn hàng chờ giao trong Mobile POS | Đã xác nhận |
 | 6 | Kiểm tra tồn kho | Tra cứu `stock.quant` theo địa điểm được phân quyền | Đã xác nhận |
 | 7 | Tra cứu MST | Tra cứu mã số thuế khách hàng qua xinvoice (mặc định); minvoice và VietQR là nguồn dự phòng khi nguồn chính lỗi hoặc không có | Đã xác nhận |
 | 8 | Quản lý user | Tạo user liên kết `hr.employee` Odoo (trừ admin mặc định), vô hiệu hóa, phân quyền (ADMIN) | Đã xác nhận |
@@ -80,7 +80,7 @@ Giai đoạn phát triển ban đầu, hệ thống có **2 role**:
 | Role | Mô tả | Quyền chính |
 |---|---|---|
 | ADMIN | Quản trị hệ thống | Toàn quyền: quản lý user, cấu hình, hủy đơn đã xác nhận |
-| POS User | Nhân viên sử dụng POS | Tạo đơn, ghi nhận thanh toán, kiểm tra tồn kho, xử lý backorder |
+| POS User | Nhân viên sử dụng POS | Tạo đơn, ghi nhận thanh toán, kiểm tra tồn kho, xử lý đơn hàng chờ giao |
 
 **Ghi chú:**
 - 1 user có thể được gán nhiều role
@@ -229,7 +229,7 @@ User login thành công
 |---|---|---|
 | Bán hàng | `sale.order`, `sale.order.line` | `create`, `action_confirm`, `action_cancel` |
 | Xuất kho | `stock.picking`, `stock.move.line` | `button_validate` |
-| Backorder | `stock.backorder.confirmation` | `process` |
+| Đơn hàng chờ giao (backorder Odoo) | `stock.backorder.confirmation` | `process` |
 | Serial / Lot | `stock.lot` | `search_read` (gợi ý), `create` (nếu mới) |
 | Invoice | `account.move` | `create` (draft) → `write` ngày hóa đơn = ngày giao + `action_post` khi đã giao + thu đủ (GH #2/#7) |
 | Ghi chú trên đơn | `sale.order` (chatter) | `message_post` note nội bộ khi đổi ngày hẹn lấy hàng (GH #3) |
@@ -253,7 +253,7 @@ Backend dùng **JSON-RPC** (qua `httpx` async) để gọi các method trên, kh
 - **account.payment**: Tạo từ Mobile POS dựa trên thanh toán thực tế của khách
 - **Serial Number**: POS user **chỉ chọn** serial từ `stock.lot` có sẵn theo sản phẩm — không nhập tay, không tạo serial mới (GH #20)
 - **Warehouse**: Tự động chọn dựa trên warehouse/location được gán cho user (14 warehouse, 20+ location)
-- **Backorder**: Được hiển thị và xử lý trong Mobile POS
+- **Đơn hàng chờ giao**: Được hiển thị và xử lý trong Mobile POS
 
 ---
 
@@ -465,7 +465,7 @@ Các hạng mục chưa triển khai trong giai đoạn này, để dành cho c�
 |---|---|---|---|---|
 | B-10 | Audit log stream Loki | Chuyển từ file `*.log` sang Loki + Grafana để query và alert | Trung bình | Backlog |
 | B-11 | Webhook từ Odoo | Nhận sự kiện cập nhật sản phẩm / giá từ Odoo để invalidate cache tự động | Trung bình | Backlog |
-| B-12 | Push notification | Thông báo cho nhân viên khi backorder sẵn sàng validate | Thấp | Backlog |
+| B-12 | Push notification | Thông báo cho nhân viên khi đơn hàng chờ giao đã có hàng để giao | Thấp | Backlog |
 | B-13 | Scale multi-worker | Nếu cần scale FastAPI lên nhiều worker → thêm Redis cho shared cache | Thấp | Backlog |
 | B-14 | Monitoring / Alerting | Tích hợp Prometheus + Grafana để theo dõi uptime và performance | Thấp | Backlog |
 
